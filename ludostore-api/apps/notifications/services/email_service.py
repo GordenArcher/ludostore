@@ -135,3 +135,22 @@ class EmailService:
                 "expiry_minutes": 5,
             },
         )
+
+    @staticmethod
+    def send_order_confirmation_email(
+        email: str, order_data, user_name: str = ""
+    ) -> None:
+        """Send order confirmation email."""
+        frontend_url = settings.FRONTEND_URL
+
+        EmailService.send_email(
+            subject=f"Order Confirmation - {order_data.get('order_number')}",
+            to=email,
+            template_name="emails/order_confirmation.html",
+            context={
+                "user_name": user_name if user_name else "there",
+                "order": order_data,
+                "order_items": order_data.get("items", []),
+                "frontend_url": frontend_url,
+            },
+        )

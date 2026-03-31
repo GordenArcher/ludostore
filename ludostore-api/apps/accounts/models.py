@@ -5,6 +5,8 @@ Models are thin and only define data structure.
 No business logic in models - all logic goes to services and utils.
 """
 
+import uuid
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -64,6 +66,7 @@ class User(AbstractUser):
     - We only need to customize the identifier field
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None  # Explicitly remove username field
     email = models.EmailField(
         unique=True,
@@ -96,6 +99,7 @@ class UserAccount(models.Model):
     4. Performance: Profile fields can be loaded separately when not needed
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,

@@ -1,0 +1,594 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Order Confirmation - LudoStore</title>
+    </head>
+    <body
+        style="
+            margin: 0;
+            padding: 0;
+            font-family:
+                -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+                Helvetica, Arial, sans-serif;
+            background-color: #f5f5f5;
+        "
+    >
+        <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="background-color: #f5f5f5"
+        >
+            <tr>
+                <td align="center" style="padding: 40px 20px">
+                    <table
+                        width="100%"
+                        max-width="600px"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                        style="
+                            max-width: 600px;
+                            width: 100%;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                        "
+                    >
+                        <!-- Header -->
+                        <tr>
+                            <td style="padding: 32px 32px 0 32px">
+                                <h1
+                                    style="
+                                        margin: 0;
+                                        font-size: 24px;
+                                        font-weight: 600;
+                                        color: #000000;
+                                    "
+                                >
+                                    Order Confirmation
+                                </h1>
+                                <p
+                                    style="
+                                        margin: 8px 0 0 0;
+                                        font-size: 14px;
+                                        color: #666666;
+                                    "
+                                >
+                                    Order #{{ order.order_number }}
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Greeting -->
+                        <tr>
+                            <td style="padding: 24px 32px 0 32px">
+                                <p
+                                    style="
+                                        margin: 0;
+                                        font-size: 16px;
+                                        line-height: 1.5;
+                                        color: #000000;
+                                    "
+                                >
+                                    Hello {{ user_name }},
+                                </p>
+                                <p
+                                    style="
+                                        margin: 16px 0 0 0;
+                                        font-size: 16px;
+                                        line-height: 1.5;
+                                        color: #000000;
+                                    "
+                                >
+                                    Thank you for your order! We've received
+                                    your order and will process it shortly.
+                                </p>
+                            </td>
+                        </tr>
+
+                        <!-- Order Summary -->
+                        <tr>
+                            <td style="padding: 24px 32px">
+                                <div
+                                    style="
+                                        background-color: #f8f9fa;
+                                        border-radius: 8px;
+                                        padding: 20px;
+                                        margin: 16px 0;
+                                    "
+                                >
+                                    <h2
+                                        style="
+                                            margin: 0 0 16px 0;
+                                            font-size: 18px;
+                                            font-weight: 600;
+                                            color: #000000;
+                                        "
+                                    >
+                                        Order Summary
+                                    </h2>
+
+                                    <table
+                                        width="100%"
+                                        cellpadding="0"
+                                        cellspacing="0"
+                                        border="0"
+                                        style="width: 100%"
+                                    >
+                                        {% for item in order_items %}
+                                        <tr
+                                            style="
+                                                border-bottom: 1px solid #e9ecef;
+                                            "
+                                        >
+                                            <td style="padding: 12px 0">
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #000000;
+                                                    "
+                                                >
+                                                    <strong
+                                                        >{{ item.quantity
+                                                        }}x</strong
+                                                    >
+                                                    {{ item.product_name }}
+                                                </p>
+                                            </td>
+                                            <td
+                                                style="
+                                                    padding: 12px 0;
+                                                    text-align: right;
+                                                "
+                                            >
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #000000;
+                                                    "
+                                                >
+                                                    ₵{{ item.subtotal }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+
+                                    <hr
+                                        style="
+                                            margin: 16px 0;
+                                            border: none;
+                                            border-top: 1px solid #e9ecef;
+                                        "
+                                    />
+
+                                    <table
+                                        width="100%"
+                                        cellpadding="0"
+                                        cellspacing="0"
+                                        border="0"
+                                        style="width: 100%"
+                                    >
+                                        <tr>
+                                            <td style="padding: 8px 0">
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    Subtotal
+                                                </p>
+                                            </td>
+                                            <td
+                                                style="
+                                                    padding: 8px 0;
+                                                    text-align: right;
+                                                "
+                                            >
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    ₵{{ order.subtotal }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0">
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    Shipping Fee
+                                                </p>
+                                            </td>
+                                            <td
+                                                style="
+                                                    padding: 8px 0;
+                                                    text-align: right;
+                                                "
+                                            >
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    ₵{{ order.shipping_fee }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0">
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    Tax
+                                                </p>
+                                            </td>
+                                            <td
+                                                style="
+                                                    padding: 8px 0;
+                                                    text-align: right;
+                                                "
+                                            >
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 14px;
+                                                        color: #666666;
+                                                    "
+                                                >
+                                                    ₵{{ order.tax }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        <tr
+                                            style="
+                                                border-top: 1px solid #e9ecef;
+                                            "
+                                        >
+                                            <td style="padding: 12px 0">
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 16px;
+                                                        font-weight: 600;
+                                                        color: #000000;
+                                                    "
+                                                >
+                                                    Total
+                                                </p>
+                                            </td>
+                                            <td
+                                                style="
+                                                    padding: 12px 0;
+                                                    text-align: right;
+                                                "
+                                            >
+                                                <p
+                                                    style="
+                                                        margin: 0;
+                                                        font-size: 16px;
+                                                        font-weight: 600;
+                                                        color: #000000;
+                                                    "
+                                                >
+                                                    ₵{{ order.total }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Shipping Address -->
+                        <tr>
+                            <td style="padding: 0 32px">
+                                <h2
+                                    style="
+                                        margin: 0 0 16px 0;
+                                        font-size: 18px;
+                                        font-weight: 600;
+                                        color: #000000;
+                                    "
+                                >
+                                    Shipping Address
+                                </h2>
+                                <div
+                                    style="
+                                        background-color: #f8f9fa;
+                                        border-radius: 8px;
+                                        padding: 16px;
+                                    "
+                                >
+                                    <p
+                                        style="
+                                            margin: 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        <strong
+                                            >{{
+                                            order.shipping_address.recipient_name
+                                            }}</strong
+                                        >
+                                    </p>
+                                    <p
+                                        style="
+                                            margin: 8px 0 0 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {{ order.shipping_address.street_address
+                                        }}
+                                    </p>
+                                    {% if order.shipping_address.apartment %}
+                                    <p
+                                        style="
+                                            margin: 4px 0 0 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {{ order.shipping_address.apartment }}
+                                    </p>
+                                    {% endif %}
+                                    <p
+                                        style="
+                                            margin: 4px 0 0 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {{ order.shipping_address.city }}, {{
+                                        order.shipping_address.state }} {{
+                                        order.shipping_address.postal_code }}
+                                    </p>
+                                    <p
+                                        style="
+                                            margin: 4px 0 0 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {{ order.shipping_address.country }}
+                                    </p>
+                                    <p
+                                        style="
+                                            margin: 8px 0 0 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        Phone: {{
+                                        order.shipping_address.phone_number }}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Payment Info -->
+                        <tr>
+                            <td style="padding: 24px 32px">
+                                <h2
+                                    style="
+                                        margin: 0 0 16px 0;
+                                        font-size: 18px;
+                                        font-weight: 600;
+                                        color: #000000;
+                                    "
+                                >
+                                    Payment Method
+                                </h2>
+                                <div
+                                    style="
+                                        background-color: #f8f9fa;
+                                        border-radius: 8px;
+                                        padding: 16px;
+                                    "
+                                >
+                                    <p
+                                        style="
+                                            margin: 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {% if order.payment_method == 'cash' %}
+                                        Cash on Delivery {% else %} Paystack
+                                        (Paid via card) {% endif %}
+                                    </p>
+                                    <p
+                                        style="
+                                            margin: 8px 0 0 0;
+                                            font-size: 14px;
+                                            color: #666666;
+                                        "
+                                    >
+                                        Status: {% if order.payment_status ==
+                                        'paid' %}
+                                        <span style="color: #10b981">Paid</span>
+                                        {% elif order.payment_status ==
+                                        'pending' %}
+                                        <span style="color: #f59e0b"
+                                            >Pending</span
+                                        >
+                                        {% else %}
+                                        <span style="color: #ef4444"
+                                            >Failed</span
+                                        >
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding: 0 32px">
+                                <h2
+                                    style="
+                                        margin: 0 0 16px 0;
+                                        font-size: 18px;
+                                        font-weight: 600;
+                                        color: #000000;
+                                    "
+                                >
+                                    Order Status
+                                </h2>
+                                <div
+                                    style="
+                                        background-color: #f8f9fa;
+                                        border-radius: 8px;
+                                        padding: 16px;
+                                    "
+                                >
+                                    <p
+                                        style="
+                                            margin: 0;
+                                            font-size: 14px;
+                                            color: #000000;
+                                        "
+                                    >
+                                        {{ order.order_status|title }}
+                                    </p>
+                                    <p
+                                        style="
+                                            margin: 8px 0 0 0;
+                                            font-size: 14px;
+                                            color: #666666;
+                                        "
+                                    >
+                                        Order placed on {{ order.created_at }}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {% if order.customer_note %}
+                        <!-- Customer Note -->
+                        <tr>
+                            <td style="padding: 24px 32px">
+                                <h2
+                                    style="
+                                        margin: 0 0 16px 0;
+                                        font-size: 18px;
+                                        font-weight: 600;
+                                        color: #000000;
+                                    "
+                                >
+                                    Your Note
+                                </h2>
+                                <div
+                                    style="
+                                        background-color: #f8f9fa;
+                                        border-radius: 8px;
+                                        padding: 16px;
+                                    "
+                                >
+                                    <p
+                                        style="
+                                            margin: 0;
+                                            font-size: 14px;
+                                            color: #666666;
+                                        "
+                                    >
+                                        {{ order.customer_note }}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        <!-- Action Button -->
+                        <tr>
+                            <td style="padding: 24px 32px 32px 32px">
+                                <div style="text-align: center">
+                                    <a
+                                        href="{{ frontend_url }}/orders/{{ order.id }}"
+                                        style="
+                                            display: inline-block;
+                                            background-color: #000000;
+                                            color: #ffffff;
+                                            text-decoration: none;
+                                            padding: 14px 32px;
+                                            border-radius: 8px;
+                                            font-size: 16px;
+                                            font-weight: 600;
+                                        "
+                                        >View Order Details</a
+                                    >
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td
+                                style="
+                                    padding: 24px 32px 32px 32px;
+                                    border-top: 1px solid #e9ecef;
+                                "
+                            >
+                                <p
+                                    style="
+                                        margin: 0;
+                                        font-size: 12px;
+                                        line-height: 1.5;
+                                        color: #999999;
+                                    "
+                                >
+                                    If you have any questions about your order,
+                                    please contact our support team.
+                                </p>
+                                <p
+                                    style="
+                                        margin: 8px 0 0 0;
+                                        font-size: 12px;
+                                        line-height: 1.5;
+                                        color: #999999;
+                                    "
+                                >
+                                    This is an automated message, please do not
+                                    reply to this email.
+                                </p>
+                                <p
+                                    style="
+                                        margin: 8px 0 0 0;
+                                        font-size: 12px;
+                                        line-height: 1.5;
+                                        color: #999999;
+                                    "
+                                >
+                                    &copy; 2025 LudoStore. All rights reserved.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

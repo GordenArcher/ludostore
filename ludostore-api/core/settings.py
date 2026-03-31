@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "apps.products",
     "apps.addresses",
     "apps.wishlist",
+    "apps.cart",
+    "apps.orders",
 ]
 
 
@@ -224,5 +226,8 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+
+PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY", "")
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
 
 FRONTEND_URL = "http://localhost:5173"
