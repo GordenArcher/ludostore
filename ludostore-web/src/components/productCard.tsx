@@ -13,6 +13,7 @@ import {
 import type { Product } from "../types/product";
 import { useWishlistStore } from "../store/wishlistStore";
 import { AddToWishlistModal } from "./modals/AddToWishlistModal";
+import { AddToCartModal } from "./modals/AddToCartModal";
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +22,8 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
+
   const [wishlistInfo, setWishlistInfo] = useState<{
     isInWishlist: boolean;
     itemId?: string;
@@ -92,7 +95,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         whileHover={{ y: -4 }}
         className="group"
       >
-        <Link to={`/product/${product.id}`} className="block">
+        <Link to={`/products/${product.id}`} className="block">
           <div className="bg-[#1e1e1e] rounded-xl overflow-hidden border border-white/10 hover:border-yellow-500/50 transition-all duration-300">
             <div className="relative aspect-square overflow-hidden bg-[#2a2a2a]">
               <img
@@ -129,12 +132,14 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 <button
                   onClick={(e) => {
                     e.preventDefault();
+                    setShowCartModal(true);
                   }}
                   disabled={!isInStock}
                   className="w-9 h-9 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg flex items-center justify-center transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4" />
                 </button>
+
                 <button
                   onClick={handleWishlistClick}
                   className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all transform hover:scale-110 backdrop-blur-sm cursor-pointer ${
@@ -170,7 +175,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               {wishlistInfo.isInWishlist && wishlistInfo.notes && (
                 <div className="mb-2 p-1.5 bg-yellow-500/10 rounded-lg">
                   <div className="flex items-start gap-1">
-                    <FileText className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                    <FileText className="w-3 h-3 text-yellow-500 mt-0.5 shrink-0" />
                     <p className="text-yellow-500 text-xs italic line-clamp-1">
                       {wishlistInfo.notes}
                     </p>
@@ -208,6 +213,18 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         existingNotes={wishlistInfo.notes}
         onSuccess={handleWishlistSuccess}
         onRemove={handleWishlistRemove}
+      />
+
+      <AddToCartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        product={{
+          id: product.id,
+          name: product.name,
+          current_price: product.current_price,
+          images: product.images,
+          stock_quantity: product.stock_quantity,
+        }}
       />
     </>
   );

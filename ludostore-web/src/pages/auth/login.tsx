@@ -7,6 +7,7 @@ import type { ApiErrorResponse } from "../../types/auth";
 import { isAxiosError } from "axios";
 import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { Spinner } from "../../components/loading/Spinner";
+import { useCartStore } from "../../store/cartStore";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Login = () => {
   const prefilledEmail = searchParams.get("email") || "";
 
   const { checkAuth, isAuthenticated } = useAuthStore();
+  const { syncGuestCart } = useCartStore();
 
   const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
@@ -77,6 +79,7 @@ const Login = () => {
 
       if (response.data) {
         await checkAuth();
+        await syncGuestCart();
         navigate(redirectUri);
       }
     } catch (err: any) {

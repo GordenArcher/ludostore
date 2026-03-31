@@ -8,6 +8,12 @@ import Products from "../pages/products/products";
 import ProductDetail from "../pages/products/ProductDetail";
 import Wishlist from "../pages/wishlist";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import Cart from "../pages/cart/Cart";
+import Checkout from "../pages/checkout/checkout";
+import Orders from "../pages/orders/Orders";
+import OrderDetail from "../pages/orders/OrderDetail";
+import Verification from "../pages/payments/verification";
+import Profile from "../pages/profile/profile";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +42,54 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Wishlist />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/cart",
+        element: <Cart />,
+      },
+
+      {
+        path: "/checkout",
+        element: (
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/orders",
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "summary/:orderId",
+            element: (
+              <ProtectedRoute>
+                <OrderDetail />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+
+      {
+        path: "payment/verify",
+        element: <Verification />,
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         ),
       },

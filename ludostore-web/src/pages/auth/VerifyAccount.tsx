@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Mail,
 } from "lucide-react";
+import { Spinner } from "../../components/loading/Spinner";
 
 const VerifyAccount = () => {
   const navigate = useNavigate();
@@ -113,15 +114,11 @@ const VerifyAccount = () => {
           className="bg-[#1e1e1e] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 overflow-hidden"
         >
           <div className="p-8 text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="mb-6"
-            >
-              <div className="w-20 h-20 mx-auto bg-yellow-500/20 rounded-full flex items-center justify-center">
-                <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center">
+                <Spinner size="xl" color="yellow" />
               </div>
-            </motion.div>
+            </div>
 
             <h1 className="text-white text-2xl font-bold mb-3">
               Verifying Your Account
@@ -152,8 +149,8 @@ const VerifyAccount = () => {
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="mb-6"
             >
-              <div className="w-20 h-20 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-10 h-10 text-green-500" />
+              <div className="w-20 h-20 mx-auto bg-green-900 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-10 h-10 text-white" />
               </div>
             </motion.div>
 
@@ -191,7 +188,7 @@ const VerifyAccount = () => {
             >
               <button
                 onClick={() => navigate("/auth/login")}
-                className="w-full bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-semibold py-2.5 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                className="w-full cursor-pointer bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 font-semibold py-2.5 rounded-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 Go to Login
                 <ArrowRight className="w-4 h-4" />
@@ -223,9 +220,7 @@ const VerifyAccount = () => {
               animate={{ rotate: [0, -5, 5, 0] }}
               transition={{ delay: 0.2, duration: 0.5 }}
               className="inline-block"
-            >
-              {/*<div className="text-6xl mb-4">🔐</div>*/}
-            </motion.div>
+            ></motion.div>
             <h1 className="text-white text-2xl font-bold mb-2">
               Verify Your Account
             </h1>

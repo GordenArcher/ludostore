@@ -17,6 +17,7 @@ import {
   Heart,
 } from "lucide-react";
 import { Spinner } from "./loading/Spinner";
+import { useCartStore } from "../store/cartStore";
 
 const Navbar = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
@@ -24,6 +25,12 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { itemCount, fetchCartCount } = useCartStore();
+
+  useEffect(() => {
+    fetchCartCount();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -74,6 +81,11 @@ const Navbar = () => {
               >
                 <ShoppingCart className="w-4 h-4" />
                 Cart
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-yellow-500 text-gray-900 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {itemCount > 9 ? "9+" : itemCount}
+                  </span>
+                )}
               </Link>
             </div>
 
