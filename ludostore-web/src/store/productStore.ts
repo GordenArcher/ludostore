@@ -1,0 +1,228 @@
+import { create } from "zustand";
+import { productsAPI } from "../api/products";
+import type { Product, Category, Pagination } from "../types/product";
+
+interface ProductState {
+  products: Product[];
+  categories: Category[];
+  selectedProduct: Product | null;
+  selectedCategory: Category | null;
+  pagination: Pagination | null;
+
+  isLoadingProducts: boolean;
+  isLoadingCategories: boolean;
+  isLoadingProduct: boolean;
+  isUpdating: boolean;
+
+  error: string | null;
+
+  // Filters
+  currentPage: number;
+  pageSize: number;
+  categoryId: string | null;
+  searchQuery: string;
+  featuredOnly: boolean;
+
+  // Actions
+  fetchProducts: () => Promise<void>;
+  fetchCategories: () => Promise<void>;
+  fetchProductById: (productId: string) => Promise<void>;
+  fetchCategoryById: (categoryId: string) => Promise<void>;
+  setPage: (page: number) => void;
+  setCategoryFilter: (categoryId: string | null) => void;
+  setSearchQuery: (query: string) => void;
+  setFeaturedOnly: (featured: boolean) => void;
+  clearFilters: () => void;
+  reset: () => void;
+}
+
+export const useProductStore = create<ProductState>((set, get) => ({
+  // Initial state
+  products: [],
+  categories: [],
+  selectedProduct: null,
+  selectedCategory: null,
+  pagination: null,
+  isLoadingProducts: false,
+  isLoadingCategories: false,
+  isLoadingProduct: false,
+  isUpdating: false,
+  error: null,
+  currentPage: 1,
+  pageSize: 12,
+  categoryId: null,
+  searchQuery: "",
+  featuredOnly: false,
+
+  // Fetch products with current filters
+  fetchProducts: async () => {
+    set({ isLoadingProducts: true, error: null });
+
+    const { currentPage, pageSize, categoryId, searchQuery, featuredOnly } =
+      get();
+
+    try {
+      const response = await productsAPI.getProducts({
+        page: currentPage,
+        page_size: pageSize,
+        category_id: categoryId || undefined,
+        search: searchQuery || undefined,
+        featured: featuredOnly || undefined,
+      });
+
+      if (response.status === "success") {
+        set({
+          products: response.data.products,
+          pagination: response.data.pagination,
+          isLoadingProducts: false,
+        });
+      } else {
+        set({
+          error: response.message,
+          isLoadingProducts: false,
+        });
+      }
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch products",
+        isLoadingProducts: false,
+      });
+    }
+  },
+
+  // Fetch all categories
+  fetchCategories: async () => {
+    set({ isLoadingCategories: true, error: null });
+
+    try {
+      const response = await productsAPI.getCategories({
+        page_size: 100,
+      });
+
+      if (response.status === "success") {
+        set({
+          categories: response.data.categories,
+          isLoadingCategories: false,
+        });
+      } else {
+        set({
+          error: response.message,
+          isLoadingCategories: false,
+        });
+      }
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch categories",
+        isLoadingCategories: false,
+      });
+    }
+  },
+
+  // Fetch single product by ID
+  fetchProductById: async (productId: string) => {
+    set({ isLoadingProduct: true, error: null });
+
+    try {
+      const response = await productsAPI.getProduct(productId);
+
+      if (response.status === "success") {
+        set({
+          selectedProduct: response.data,
+          isLoadingProduct: false,
+        });
+      } else {
+        set({
+          error: response.message,
+          isLoadingProduct: false,
+        });
+      }
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch product",
+        isLoadingProduct: false,
+      });
+    }
+  },
+
+  // Fetch single category by ID
+  fetchCategoryById: async (categoryId: string) => {
+    set({ isLoadingCategories: true, error: null });
+
+    try {
+      const response = await productsAPI.getCategory(categoryId);
+
+      if (response.status === "success") {
+        set({
+          selectedCategory: response.data,
+          isLoadingCategories: false,
+        });
+      } else {
+        set({
+          error: response.message,
+          isLoadingCategories: false,
+        });
+      }
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch category",
+        isLoadingCategories: false,
+      });
+    }
+  },
+
+  // Set current page
+  setPage: (page: number) => {
+    set({ currentPage: page });
+    get().fetchProducts();
+  },
+
+  // Set category filter
+  setCategoryFilter: (categoryId: string | null) => {
+    set({ categoryId, currentPage: 1 });
+    get().fetchProducts();
+  },
+
+  // Set search query
+  setSearchQuery: (query: string) => {
+    set({ searchQuery: query, currentPage: 1 });
+    get().fetchProducts();
+  },
+
+  // Set featured only filter
+  setFeaturedOnly: (featured: boolean) => {
+    set({ featuredOnly: featured, currentPage: 1 });
+    get().fetchProducts();
+  },
+
+  // Clear all filters
+  clearFilters: () => {
+    set({
+      categoryId: null,
+      searchQuery: "",
+      featuredOnly: false,
+      currentPage: 1,
+    });
+    get().fetchProducts();
+  },
+
+  // Reset store
+  reset: () => {
+    set({
+      products: [],
+      categories: [],
+      selectedProduct: null,
+      selectedCategory: null,
+      pagination: null,
+      isLoadingProducts: false,
+      isLoadingCategories: false,
+      isLoadingProduct: false,
+      isUpdating: false,
+      error: null,
+      currentPage: 1,
+      pageSize: 12,
+      categoryId: null,
+      searchQuery: "",
+      featuredOnly: false,
+    });
+  },
+}));

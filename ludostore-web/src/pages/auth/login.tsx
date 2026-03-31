@@ -5,7 +5,8 @@ import { login } from "../../api/auth";
 import { useAuthStore } from "../../store/authStore";
 import type { ApiErrorResponse } from "../../types/auth";
 import { isAxiosError } from "axios";
-import { Mail, Lock, LogIn, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { Spinner } from "../../components/loading/Spinner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -123,9 +124,7 @@ const Login = () => {
               animate={{ rotate: [0, -5, 5, 0] }}
               transition={{ delay: 0.2, duration: 0.5 }}
               className="inline-block"
-            >
-              {/*<div className="text-6xl mb-4">🎲</div>*/}
-            </motion.div>
+            ></motion.div>
             <h1 className="text-white text-2xl font-bold mb-2">Welcome Back</h1>
             <p className="text-gray-400 text-sm">
               Sign in to continue to Ludo Kingdom
@@ -243,10 +242,9 @@ const Login = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex items-center justify-center gap-2"
+                    className="flex items-center p-2 justify-center gap-2"
                   >
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Signing in...
+                    <Spinner size="md" color="white" />
                   </motion.span>
                 ) : (
                   <motion.span
@@ -254,7 +252,7 @@ const Login = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex items-center justify-center gap-2"
+                    className="flex text-white items-center justify-center gap-2"
                   >
                     <LogIn className="w-5 h-5" />
                     Sign In

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import Navbar from "./components/Navbar";
 
@@ -12,6 +13,8 @@ function App() {
   return (
     <div>
       <Navbar />
+
+      <Outlet />
     </div>
   );
 }
