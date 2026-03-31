@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "apps.accounts",
     "apps.products",
+    "apps.addresses",
+    "apps.wishlist",
 ]
 
 

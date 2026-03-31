@@ -13,6 +13,8 @@ dump.rdb
 
 staticfiles/
 media/
+products/
+categories/
 
 # */migrations/*
 # !*/migrations/__init__.py
