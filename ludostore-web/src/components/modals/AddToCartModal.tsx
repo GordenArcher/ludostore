@@ -13,12 +13,16 @@ interface AddToCartModalProps {
     images: Array<{ image: string; is_primary: boolean }>;
     stock_quantity: number;
   };
+  initialQuantity?: number;
+  onSuccess?: (quantity: number) => void;
 }
 
 export const AddToCartModal = ({
   isOpen,
   onClose,
   product,
+  initialQuantity = 1,
+  onSuccess,
 }: AddToCartModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [quantity, setQuantity] = useState(1);
@@ -49,6 +53,7 @@ export const AddToCartModal = ({
       product.current_price,
     );
     if (success) {
+      onSuccess?.(quantity);
       setIsSuccess(true);
       setTimeout(() => {
         setIsSuccess(false);

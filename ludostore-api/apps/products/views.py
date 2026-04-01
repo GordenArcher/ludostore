@@ -7,6 +7,7 @@ Separation of concerns:
 """
 
 import logging
+from decimal import Decimal
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -116,15 +117,18 @@ def get_category(request, category_id):
 @permission_classes([AllowAny])
 def list_products(request):
     """
-    List all active products with filters.
-    Public access - no authentication required.
+    List all active products with filters and sorting.
 
     Query params:
-    - category_id: Filter by category
-    - search: Search by name/description
-    - featured: Filter featured products (true/false)
     - page: Page number
     - page_size: Items per page
+    - category_id: Filter by category
+    - search: Search by name/description
+    - min_price: Minimum price
+    - max_price: Maximum price
+    - in_stock: Filter in stock products (true/false)
+    - featured: Filter featured products (true/false)
+    - sort: price_asc, price_desc, newest, oldest, name_asc, name_desc
     """
     request_id = generate_request_id()
 
@@ -132,8 +136,19 @@ def list_products(request):
         page, page_size = get_pagination_params(request)
         category_id = request.GET.get("category_id")
         search = request.GET.get("search")
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+        in_stock = request.GET.get("in_stock")
         featured = request.GET.get("featured")
+        sort = request.GET.get("sort")
 
+        # Convert params
+        if min_price:
+            min_price = Decimal(min_price)
+        if max_price:
+            max_price = Decimal(max_price)
+        if in_stock:
+            in_stock = in_stock.lower() == "true"
         if featured:
             featured = featured.lower() == "true"
 
@@ -142,10 +157,22 @@ def list_products(request):
             page_size=page_size,
             category_id=category_id,
             search=search,
+            min_price=min_price,
+            max_price=max_price,
+            in_stock=in_stock,
             featured=featured,
+            sort=sort,
         )
 
-        serializer = ProductSerializer(result["items"], many=True)
+        # Enrich products with user data if authenticated
+        if request.user.is_authenticated:
+            products = ProductService.enrich_products_with_user_data(
+                result["items"], request.user
+            )
+        else:
+            products = result["items"]
+
+        serializer = ProductSerializer(products, many=True)
 
         return success_response(
             message="Products retrieved",
@@ -180,7 +207,6 @@ def list_products(request):
 def get_product(request, product_id):
     """
     Get a single product by ID.
-    Public access - no authentication required.
     """
     request_id = generate_request_id()
 
@@ -193,6 +219,12 @@ def get_product(request, product_id):
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="PRODUCT_NOT_FOUND",
                 request_id=request_id,
+            )
+
+        # Enrich with user data if authenticated
+        if request.user.is_authenticated:
+            product = ProductService.enrich_product_with_user_data(
+                product, request.user
             )
 
         serializer = ProductSerializer(product)

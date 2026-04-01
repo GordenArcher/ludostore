@@ -25,7 +25,10 @@ export interface Product {
   images: ProductImage[];
   created_at: string;
   updated_at: string;
-  created_by: number;
+  is_in_wishlist?: boolean;
+  is_in_cart?: boolean;
+  cart_item_id?: string;
+  cart_quantity?: number;
 }
 
 export interface Category {

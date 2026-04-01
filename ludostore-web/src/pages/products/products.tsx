@@ -12,11 +12,15 @@ import {
   LayoutGrid,
   Crown,
   SlidersHorizontal,
+  DollarSign,
+  Box,
+  ArrowUpDown,
 } from "lucide-react";
 import { useProductStore } from "../../store/productStore";
 import { ProductCard } from "../../components/productCard";
 import { ProductCardSkeleton } from "../../components/loading/productCardSkeleton";
 import { FilterSidebar } from "../../components/filterSidebar";
+import type { Product } from "../../types/product";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,7 +43,11 @@ const Products = () => {
     setCategoryFilter,
     setSearchQuery,
     setFeaturedOnly,
+    setSortBy,
+    setPriceRange,
+    setInStockOnly,
     clearFilters,
+    filters,
   } = useProductStore();
 
   useEffect(() => {
@@ -55,16 +63,41 @@ const Products = () => {
         setCategoryFilter(foundCategory.id);
       }
     }
-  }, [searchParams, categories, setCategoryFilter]);
 
-  const orderingOptions = [
+    const sortParam = searchParams.get("sort");
+    if (sortParam && sortParam !== localSort) {
+      setLocalSort(sortParam);
+      setSortBy(sortParam);
+    }
+
+    const minPrice = searchParams.get("min_price");
+    const maxPrice = searchParams.get("max_price");
+    if (minPrice || maxPrice) {
+      setPriceRange({
+        min: minPrice ? parseFloat(minPrice) : 0,
+        max: maxPrice ? parseFloat(maxPrice) : 10000,
+      });
+    }
+
+    const inStock = searchParams.get("in_stock");
+    if (inStock === "true") {
+      setInStockOnly(true);
+    }
+  }, [searchParams, categories]);
+
+  const sortingOptions = [
     { value: "-created_at", label: "Newest First", icon: Sparkles },
-    { value: "-current_price", label: "Price: High to Low" },
-    { value: "current_price", label: "Price: Low to High" },
+    { value: "created_at", label: "Oldest First", icon: Sparkles },
+    { value: "-current_price", label: "Price: High to Low", icon: DollarSign },
+    { value: "current_price", label: "Price: Low to High", icon: DollarSign },
+    { value: "name", label: "Name: A to Z", icon: ArrowUpDown },
+    { value: "-name", label: "Name: Z to A", icon: ArrowUpDown },
   ];
 
   const handleSortChange = (value: string) => {
     setLocalSort(value);
+    setSortBy(value);
+    setSearchParams({ ...Object.fromEntries(searchParams), sort: value });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -73,7 +106,12 @@ const Products = () => {
   };
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
-  const hasActiveFilters = categoryId !== null || featuredOnly;
+  const hasActiveFilters =
+    categoryId !== null ||
+    featuredOnly ||
+    filters.inStockOnly ||
+    filters.priceRange.min > 0 ||
+    filters.priceRange.max < 10000;
 
   return (
     <div className="min-h-screen bg-[rgb(48,48,48)]">
@@ -86,10 +124,9 @@ const Products = () => {
                 {selectedCategory ? selectedCategory.name : "All Products"}
               </h1>
             </div>
-
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#1e1e1e] border border-white/20 rounded-lg text-gray-400 hover:text-white hover:border-yellow-500 transition-colors text-sm"
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#1e1e1e] border border-white/20 rounded-lg text-gray-400 hover:text-white hover:border-yellow-500 transition-colors text-sm cursor-pointer"
             >
               <SlidersHorizontal className="w-4 h-4" />
               {isSidebarOpen ? "Hide Filters" : "Show Filters"}
@@ -118,7 +155,7 @@ const Products = () => {
           <div className="flex gap-2 sm:gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden flex items-center gap-2 px-3 py-2.5 bg-[#1e1e1e] border border-white/20 rounded-lg text-white hover:border-yellow-500 transition-colors"
+              className="lg:hidden flex items-center gap-2 px-3 py-2.5 bg-[#1e1e1e] border border-white/20 rounded-lg text-white hover:border-yellow-500 transition-colors cursor-pointer"
             >
               <Filter className="w-4 h-4" />
               <span className="text-sm">Filters</span>
@@ -133,7 +170,7 @@ const Products = () => {
                 onChange={(e) => handleSortChange(e.target.value)}
                 className="appearance-none bg-[#1e1e1e] border border-white/20 rounded-lg px-3 py-2.5 pr-8 text-white text-sm focus:outline-none focus:border-yellow-500 cursor-pointer"
               >
-                {orderingOptions.map((option) => (
+                {sortingOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -150,7 +187,7 @@ const Products = () => {
             {categoryId && selectedCategory && (
               <button
                 onClick={() => setCategoryFilter(null)}
-                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors cursor-pointer"
               >
                 <Package className="w-3 h-3" />
                 <span>Category: {selectedCategory.name}</span>
@@ -160,10 +197,33 @@ const Products = () => {
             {featuredOnly && (
               <button
                 onClick={() => setFeaturedOnly(false)}
-                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors cursor-pointer"
               >
                 <Crown className="w-3 h-3" />
                 <span>Featured Only</span>
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            {filters.inStockOnly && (
+              <button
+                onClick={() => setInStockOnly(false)}
+                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors cursor-pointer"
+              >
+                <Box className="w-3 h-3" />
+                <span>In Stock Only</span>
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            {(filters.priceRange.min > 0 || filters.priceRange.max < 10000) && (
+              <button
+                onClick={() => setPriceRange({ min: 0, max: 10000 })}
+                className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-500 text-xs rounded-lg hover:bg-yellow-500/30 transition-colors cursor-pointer"
+              >
+                <DollarSign className="w-3 h-3" />
+                <span>
+                  Price: GH₵ {filters.priceRange.min} - GH₵{" "}
+                  {filters.priceRange.max}
+                </span>
                 <X className="w-3 h-3" />
               </button>
             )}
@@ -183,8 +243,12 @@ const Products = () => {
             categories={categories}
             selectedCategoryId={categoryId}
             featuredOnly={featuredOnly}
+            inStockOnly={filters.inStockOnly}
+            priceRange={filters.priceRange}
             onCategoryChange={setCategoryFilter}
             onFeaturedChange={setFeaturedOnly}
+            onInStockChange={setInStockOnly}
+            onPriceRangeChange={setPriceRange}
             onClearFilters={clearFilters}
             isLoading={isLoadingCategories}
           />
@@ -206,7 +270,6 @@ const Products = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {isLoadingProducts ? (
-                // Show 6 skeletons while loading
                 Array.from({ length: 6 }).map((_, i) => (
                   <ProductCardSkeleton key={i} />
                 ))
@@ -223,14 +286,14 @@ const Products = () => {
                   </p>
                   <button
                     onClick={clearFilters}
-                    className="text-yellow-500 hover:text-yellow-400 inline-flex items-center gap-1 text-sm"
+                    className="text-yellow-500 hover:text-yellow-400 inline-flex items-center gap-1 text-sm cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                     Clear all filters
                   </button>
                 </div>
               ) : (
-                products.map((product, index) => (
+                products.map((product: Product, index: number) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -245,7 +308,7 @@ const Products = () => {
                 <button
                   onClick={() => setPage(currentPage - 1)}
                   disabled={!pagination.has_prev}
-                  className="p-2 bg-[#1e1e1e] border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-yellow-500 transition-colors"
+                  className="p-2 bg-[#1e1e1e] border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-yellow-500 transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -271,7 +334,7 @@ const Products = () => {
                           onClick={() => setPage(pageNum)}
                           className={`min-w-8.5 sm:min-w-10 h-8 sm:h-10 rounded-lg transition-all text-sm ${
                             currentPage === pageNum
-                              ? "bg-linear-to-r from-yellow-500 to-yellow-600 text-gray-900 font-bold"
+                              ? "bg-yellow-500 text-gray-900 font-bold"
                               : "bg-[#1e1e1e] border border-white/20 text-white hover:border-yellow-500"
                           }`}
                         >
@@ -285,7 +348,7 @@ const Products = () => {
                 <button
                   onClick={() => setPage(currentPage + 1)}
                   disabled={!pagination.has_next}
-                  className="p-2 bg-[#1e1e1e] border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-yellow-500 transition-colors"
+                  className="p-2 bg-[#1e1e1e] border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-yellow-500 transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

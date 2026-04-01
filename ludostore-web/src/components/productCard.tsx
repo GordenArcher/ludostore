@@ -11,9 +11,11 @@ import {
   FileText,
 } from "lucide-react";
 import type { Product } from "../types/product";
+import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
-import { AddToWishlistModal } from "./modals/AddToWishlistModal";
+import { useAuthStore } from "../store/authStore";
 import { AddToCartModal } from "./modals/AddToCartModal";
+import { AddToWishlistModal } from "./modals/AddToWishlistModal";
 
 interface ProductCardProps {
   product: Product;
@@ -21,16 +23,20 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
-  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+  const { getItemQuantity } = useCartStore();
+  const { checkInWishlist } = useWishlistStore();
+
   const [showCartModal, setShowCartModal] = useState(false);
-
-  const [wishlistInfo, setWishlistInfo] = useState<{
-    isInWishlist: boolean;
-    itemId?: string;
-    notes?: string | null;
-  }>({ isInWishlist: false });
-
-  const { checkInWishlist, fetchWishlist, wishlist } = useWishlistStore();
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(
+    product.is_in_wishlist || false,
+  );
+  const [wishlistItemId, setWishlistItemId] = useState<string | undefined>(
+    product.cart_item_id,
+  );
+  const [wishlistNotes, setWishlistNotes] = useState<string | null>(null);
+  const [cartQuantity, setCartQuantity] = useState(product.cart_quantity || 0);
 
   const primaryImage =
     product.images?.find((img) => img.is_primary) || product.images?.[0];
@@ -46,44 +52,43 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     product.stock_status === "in_stock" && product.stock_quantity > 0;
 
   useEffect(() => {
-    const checkWishlist = async () => {
-      const result = await checkInWishlist(product.id);
-      setWishlistInfo({
-        isInWishlist: result.is_in_wishlist,
-        itemId: result.item_id,
-      });
-    };
-    checkWishlist();
-  }, [product.id, checkInWishlist]);
-
-  useEffect(() => {
-    if (wishlist && wishlistInfo.isInWishlist) {
-      const item = wishlist.items.find((i) => i.product === product.id);
-      if (item) {
-        setWishlistInfo((prev) => ({
-          ...prev,
-          notes: item.notes,
-        }));
-      }
+    if (!isAuthenticated && !product.is_in_wishlist) {
+      const checkWishlist = async () => {
+        const result = await checkInWishlist(product.id);
+        setIsInWishlist(result.is_in_wishlist);
+        setWishlistItemId(result.item_id);
+      };
+      checkWishlist();
     }
-  }, [wishlist, product.id, wishlistInfo.isInWishlist]);
+
+    if (!isAuthenticated && !product.is_in_cart) {
+      const quantity = getItemQuantity(product.id);
+      setCartQuantity(quantity);
+    }
+  }, [isAuthenticated, product.id]);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowWishlistModal(true);
   };
 
-  const handleWishlistSuccess = async () => {
-    await fetchWishlist();
-    const result = await checkInWishlist(product.id);
-    setWishlistInfo({
-      isInWishlist: result.is_in_wishlist,
-      itemId: result.item_id,
-    });
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowCartModal(true);
+  };
+
+  const handleWishlistSuccess = () => {
+    setIsInWishlist(true);
   };
 
   const handleWishlistRemove = () => {
-    setWishlistInfo({ isInWishlist: false });
+    setIsInWishlist(false);
+    setWishlistItemId(undefined);
+    setWishlistNotes(null);
+  };
+
+  const handleCartSuccess = (quantity: number) => {
+    setCartQuantity(quantity);
   };
 
   return (
@@ -128,28 +133,33 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 </div>
               )}
 
+              {cartQuantity > 0 && (
+                <div className="absolute top-3 right-3">
+                  <span className="bg-yellow-500 text-gray-900 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-lg">
+                    <ShoppingCart className="w-3 h-3" />
+                    {cartQuantity}
+                  </span>
+                </div>
+              )}
+
               <div className="absolute bottom-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowCartModal(true);
-                  }}
+                  onClick={handleAddToCartClick}
                   disabled={!isInStock}
                   className="w-9 h-9 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg flex items-center justify-center transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4" />
                 </button>
-
                 <button
                   onClick={handleWishlistClick}
                   className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all transform hover:scale-110 backdrop-blur-sm cursor-pointer ${
-                    wishlistInfo.isInWishlist
+                    isInWishlist
                       ? "bg-red-500 text-white"
                       : "bg-black/50 hover:bg-red-500 text-white"
                   }`}
                 >
                   <Heart
-                    className={`w-4 h-4 ${wishlistInfo.isInWishlist ? "fill-current" : ""}`}
+                    className={`w-4 h-4 ${isInWishlist ? "fill-current" : ""}`}
                   />
                 </button>
               </div>
@@ -161,27 +171,11 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                   <Package className="w-3 h-3" />
                   {product.category_name}
                 </span>
-                <div className="flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-white text-xs font-medium">4.5</span>
-                  <span className="text-gray-500 text-xs">(128)</span>
-                </div>
               </div>
 
               <h3 className="text-white font-semibold mb-2 line-clamp-2 text-sm sm:text-base">
                 {product.name}
               </h3>
-
-              {wishlistInfo.isInWishlist && wishlistInfo.notes && (
-                <div className="mb-2 p-1.5 bg-yellow-500/10 rounded-lg">
-                  <div className="flex items-start gap-1">
-                    <FileText className="w-3 h-3 text-yellow-500 mt-0.5 shrink-0" />
-                    <p className="text-yellow-500 text-xs italic line-clamp-1">
-                      {wishlistInfo.notes}
-                    </p>
-                  </div>
-                </div>
-              )}
 
               <p className="text-gray-400 text-xs mb-3 line-clamp-2">
                 {product.description ||
@@ -203,18 +197,6 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         </Link>
       </motion.div>
 
-      <AddToWishlistModal
-        isOpen={showWishlistModal}
-        onClose={() => setShowWishlistModal(false)}
-        productId={product.id}
-        productName={product.name}
-        isInWishlist={wishlistInfo.isInWishlist}
-        existingItemId={wishlistInfo.itemId}
-        existingNotes={wishlistInfo.notes}
-        onSuccess={handleWishlistSuccess}
-        onRemove={handleWishlistRemove}
-      />
-
       <AddToCartModal
         isOpen={showCartModal}
         onClose={() => setShowCartModal(false)}
@@ -225,6 +207,20 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           images: product.images,
           stock_quantity: product.stock_quantity,
         }}
+        initialQuantity={cartQuantity}
+        onSuccess={handleCartSuccess}
+      />
+
+      <AddToWishlistModal
+        isOpen={showWishlistModal}
+        onClose={() => setShowWishlistModal(false)}
+        productId={product.id}
+        productName={product.name}
+        isInWishlist={isInWishlist}
+        existingItemId={wishlistItemId}
+        existingNotes={wishlistNotes}
+        onSuccess={handleWishlistSuccess}
+        onRemove={handleWishlistRemove}
       />
     </>
   );

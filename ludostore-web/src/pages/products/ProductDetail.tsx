@@ -22,6 +22,7 @@ import {
 import { useProductStore } from "../../store/productStore";
 import { useCartStore } from "../../store/cartStore";
 import { useWishlistStore } from "../../store/wishlistStore";
+import { useAuthStore } from "../../store/authStore";
 import { ProductDetailSkeleton } from "../../components/loading/productDetailSkeleton";
 import { AddToCartModal } from "../../components/modals/AddToCartModal";
 import { AddToWishlistModal } from "../../components/modals/AddToWishlistModal";
@@ -31,38 +32,76 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { selectedProduct, isLoadingProduct, fetchProductById, error } =
     useProductStore();
+  const { isAuthenticated } = useAuthStore();
+  const { getItemQuantity } = useCartStore();
   const { checkInWishlist, wishlist, fetchWishlist } = useWishlistStore();
+
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
+
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [wishlistItemId, setWishlistItemId] = useState<string | undefined>();
   const [wishlistNotes, setWishlistNotes] = useState<string | null>(null);
+  const [isInCart, setIsInCart] = useState(false);
+  const [cartItemId, setCartItemId] = useState<string | undefined>();
+  const [cartQuantity, setCartQuantity] = useState(0);
 
   useEffect(() => {
     if (productId) {
       fetchProductById(productId);
-      checkWishlistStatus();
     }
   }, [productId]);
 
   useEffect(() => {
-    if (selectedProduct && wishlist) {
-      const item = wishlist.items.find((i) => i.product === selectedProduct.id);
-      if (item) {
-        setIsInWishlist(true);
-        setWishlistItemId(item.id);
-        setWishlistNotes(item.notes);
-      } else {
-        setIsInWishlist(false);
-        setWishlistItemId(undefined);
-        setWishlistNotes(null);
+    if (selectedProduct) {
+      if (selectedProduct.is_in_wishlist !== undefined) {
+        setIsInWishlist(selectedProduct.is_in_wishlist);
+      }
+
+      if (selectedProduct.is_in_cart !== undefined) {
+        setIsInCart(selectedProduct.is_in_cart);
+        if (selectedProduct.cart_quantity) {
+          setCartQuantity(selectedProduct.cart_quantity);
+          setQuantity(selectedProduct.cart_quantity);
+        }
+        if (selectedProduct.cart_item_id) {
+          setCartItemId(selectedProduct.cart_item_id);
+        }
       }
     }
-  }, [selectedProduct, wishlist]);
+  }, [selectedProduct]);
+
+  useEffect(() => {
+    if (!isAuthenticated && selectedProduct) {
+      const checkWishlist = async () => {
+        const result = await checkInWishlist(selectedProduct.id);
+        setIsInWishlist(result.is_in_wishlist);
+        setWishlistItemId(result.item_id);
+      };
+      checkWishlist();
+
+      const cartQty = getItemQuantity(selectedProduct.id);
+      if (cartQty > 0) {
+        setIsInCart(true);
+        setCartQuantity(cartQty);
+        setQuantity(cartQty);
+      }
+    }
+  }, [isAuthenticated, selectedProduct]);
+
+  useEffect(() => {
+    if (wishlist && isInWishlist && selectedProduct) {
+      const item = wishlist.items.find((i) => i.product === selectedProduct.id);
+      if (item) {
+        setWishlistNotes(item.notes);
+        setWishlistItemId(item.id);
+      }
+    }
+  }, [wishlist, isInWishlist, selectedProduct]);
 
   useEffect(() => {
     if (selectedProduct?.images) {
@@ -81,14 +120,6 @@ const ProductDetail = () => {
     }
   }, [selectedProduct]);
 
-  const checkWishlistStatus = async () => {
-    if (productId) {
-      const result = await checkInWishlist(productId);
-      setIsInWishlist(result.is_in_wishlist);
-      setWishlistItemId(result.item_id);
-    }
-  };
-
   const handleAddToCart = () => {
     setShowCartModal(true);
   };
@@ -99,13 +130,19 @@ const ProductDetail = () => {
 
   const handleWishlistSuccess = async () => {
     await fetchWishlist();
-    await checkWishlistStatus();
+    setIsInWishlist(true);
   };
 
   const handleWishlistRemove = () => {
     setIsInWishlist(false);
     setWishlistItemId(undefined);
     setWishlistNotes(null);
+  };
+
+  const handleCartSuccess = (newQuantity: number) => {
+    setCartQuantity(newQuantity);
+    setIsInCart(newQuantity > 0);
+    setQuantity(newQuantity);
   };
 
   const handleNextImage = () => {
@@ -244,6 +281,12 @@ const ProductDetail = () => {
                       Featured
                     </span>
                   )}
+                  {isInCart && cartQuantity > 0 && (
+                    <span className="bg-green-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-lg">
+                      <ShoppingCart className="w-3 h-3" />
+                      In Cart ({cartQuantity})
+                    </span>
+                  )}
                 </div>
               </motion.div>
 
@@ -264,9 +307,9 @@ const ProductDetail = () => {
                           setSelectedImage(imageUrl);
                           setSelectedImageIndex(index);
                         }}
-                        className={`relative aspect-square bg-[#1e1e1e] rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`relative cursor-pointer aspect-square bg-[#1e1e1e] rounded-xl overflow-hidden border-2 transition-all ${
                           isActive
-                            ? "border-yellow-500 shadow-lg shadow-yellow-500/20"
+                            ? "border-yellow-500 shadow-lg"
                             : "border-white/10 hover:border-yellow-500/50"
                         }`}
                       >
@@ -396,7 +439,7 @@ const ProductDetail = () => {
                   className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
+                  {isInCart && cartQuantity > 0 ? "Update Cart" : "Add to Cart"}
                 </button>
                 <button
                   onClick={handleWishlistClick}
@@ -532,6 +575,8 @@ const ProductDetail = () => {
           images: selectedProduct.images,
           stock_quantity: selectedProduct.stock_quantity,
         }}
+        initialQuantity={cartQuantity}
+        onSuccess={handleCartSuccess}
       />
 
       <AddToWishlistModal

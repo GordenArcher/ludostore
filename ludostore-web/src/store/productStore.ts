@@ -16,14 +16,22 @@ interface ProductState {
 
   error: string | null;
 
-  // Filters
+  filters: {
+    priceRange: { min: number; max: number };
+    inStockOnly: boolean;
+    sortBy: string;
+  };
+
+  setSortBy: (sort: string) => void;
+  setPriceRange: (range: { min: number; max: number }) => void;
+  setInStockOnly: (inStock: boolean) => void;
+
   currentPage: number;
   pageSize: number;
   categoryId: string | null;
   searchQuery: string;
   featuredOnly: boolean;
 
-  // Actions
   fetchProducts: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchProductById: (productId: string) => Promise<void>;
@@ -37,7 +45,6 @@ interface ProductState {
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
-  // Initial state
   products: [],
   categories: [],
   selectedProduct: null,
@@ -54,12 +61,47 @@ export const useProductStore = create<ProductState>((set, get) => ({
   searchQuery: "",
   featuredOnly: false,
 
-  // Fetch products with current filters
+  filters: {
+    priceRange: { min: 0, max: 10000 },
+    inStockOnly: false,
+    sortBy: "-created_at",
+  },
+
+  setSortBy: (sort: string) => {
+    set({
+      filters: { ...get().filters, sortBy: sort },
+      currentPage: 1,
+    });
+    get().fetchProducts();
+  },
+
+  setPriceRange: (range: { min: number; max: number }) => {
+    set({
+      filters: { ...get().filters, priceRange: range },
+      currentPage: 1,
+    });
+    get().fetchProducts();
+  },
+
+  setInStockOnly: (inStock: boolean) => {
+    set({
+      filters: { ...get().filters, inStockOnly: inStock },
+      currentPage: 1,
+    });
+    get().fetchProducts();
+  },
+
   fetchProducts: async () => {
     set({ isLoadingProducts: true, error: null });
 
-    const { currentPage, pageSize, categoryId, searchQuery, featuredOnly } =
-      get();
+    const {
+      currentPage,
+      pageSize,
+      categoryId,
+      searchQuery,
+      featuredOnly,
+      filters,
+    } = get();
 
     try {
       const response = await productsAPI.getProducts({
@@ -68,6 +110,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         category_id: categoryId || undefined,
         search: searchQuery || undefined,
         featured: featuredOnly || undefined,
+        min_price:
+          filters.priceRange.min > 0 ? filters.priceRange.min : undefined,
+        max_price:
+          filters.priceRange.max < 10000 ? filters.priceRange.max : undefined,
+        in_stock: filters.inStockOnly || undefined,
+        sort: filters.sortBy,
       });
 
       if (response.status === "success") {
@@ -90,7 +138,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // Fetch all categories
   fetchCategories: async () => {
     set({ isLoadingCategories: true, error: null });
 
@@ -118,7 +165,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // Fetch single product by ID
   fetchProductById: async (productId: string) => {
     set({ isLoadingProduct: true, error: null });
 
@@ -144,7 +190,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // Fetch single category by ID
   fetchCategoryById: async (categoryId: string) => {
     set({ isLoadingCategories: true, error: null });
 
@@ -170,42 +215,41 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // Set current page
   setPage: (page: number) => {
     set({ currentPage: page });
     get().fetchProducts();
   },
 
-  // Set category filter
   setCategoryFilter: (categoryId: string | null) => {
     set({ categoryId, currentPage: 1 });
     get().fetchProducts();
   },
 
-  // Set search query
   setSearchQuery: (query: string) => {
     set({ searchQuery: query, currentPage: 1 });
     get().fetchProducts();
   },
 
-  // Set featured only filter
   setFeaturedOnly: (featured: boolean) => {
     set({ featuredOnly: featured, currentPage: 1 });
     get().fetchProducts();
   },
 
-  // Clear all filters
   clearFilters: () => {
     set({
       categoryId: null,
       searchQuery: "",
       featuredOnly: false,
+      filters: {
+        priceRange: { min: 0, max: 10000 },
+        inStockOnly: false,
+        sortBy: "-created_at",
+      },
       currentPage: 1,
     });
     get().fetchProducts();
   },
 
-  // Reset store
   reset: () => {
     set({
       products: [],
