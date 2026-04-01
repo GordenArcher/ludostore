@@ -15,6 +15,7 @@ import {
   Gamepad2,
   ShoppingCart,
   Heart,
+  Contact2,
 } from "lucide-react";
 import { Spinner } from "./loading/Spinner";
 import { useCartStore } from "../store/cartStore";
@@ -67,14 +68,7 @@ const Navbar = () => {
                 <Package className="w-4 h-4" />
                 Products
               </Link>
-              <Link
-                to="/wishlist"
-                className="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:bg-white/5 rounded-3xl transition-colors text-sm cursor-pointer"
-                onClick={() => setIsProfileOpen(false)}
-              >
-                <Heart className="w-4 h-4" />
-                My Wishlist
-              </Link>
+
               <Link
                 to="/cart"
                 className="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:bg-white/5 rounded-3xl transition-colors text-sm cursor-pointer"
@@ -86,6 +80,20 @@ const Navbar = () => {
                     {itemCount > 9 ? "9+" : itemCount}
                   </span>
                 )}
+              </Link>
+              <Link
+                to="/about"
+                className="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:bg-white/5 rounded-3xl transition-colors text-sm cursor-pointer"
+              >
+                <User className="w-4 h-4" />
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className="flex items-center gap-2.5 px-4 py-2 text-gray-300 hover:bg-white/5 rounded-3xl transition-colors text-sm cursor-pointer"
+              >
+                <Contact2 className="w-4 h-4" />
+                Contact
               </Link>
             </div>
 
@@ -230,6 +238,22 @@ const Navbar = () => {
                     >
                       <ShoppingCart className="w-4 h-4" />
                       Cart
+                    </Link>
+                    <Link
+                      to="/about"
+                      className="flex items-center gap-2.5 px-2 py-2 text-gray-300 hover:bg-white/5 rounded-md transition-colors text-sm cursor-pointer"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <User className="w-4 h-4" />
+                      About
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="flex items-center gap-2.5 px-2 py-2 text-gray-300 hover:bg-white/5 rounded-md transition-colors text-sm cursor-pointer"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Contact2 className="w-4 h-4" />
+                      Contact
                     </Link>
                     {!isAuthenticated && (
                       <Link

@@ -14,6 +14,12 @@ import Orders from "../pages/orders/Orders";
 import OrderDetail from "../pages/orders/OrderDetail";
 import Verification from "../pages/payments/verification";
 import Profile from "../pages/profile/profile";
+import Privacy from "../pages/public/privacy";
+import Terms from "../pages/public/terms";
+import Cookies from "../pages/public/cookies";
+import Support from "../pages/support";
+import Contact from "../pages/contact";
+import About from "../pages/about";
 
 export const router = createBrowserRouter([
   {
@@ -92,6 +98,30 @@ export const router = createBrowserRouter([
             <Profile />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "privacy",
+        element: <Privacy />,
+      },
+      {
+        path: "terms",
+        element: <Terms />,
+      },
+      {
+        path: "cookies",
+        element: <Cookies />,
+      },
+      {
+        path: "support",
+        element: <Support />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
       },
     ],
   },

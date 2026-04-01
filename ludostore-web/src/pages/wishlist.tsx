@@ -166,10 +166,10 @@ const Wishlist = () => {
                           <span className="text-xs text-yellow-500 uppercase tracking-wider">
                             {product.category_name || "Product"}
                           </span>
-                          <div className="flex items-center gap-1">
+                          {/*<div className="flex items-center gap-1">
                             <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                             <span className="text-white text-xs">4.5</span>
-                          </div>
+                          </div>*/}
                         </div>
                         <h3 className="text-white font-semibold mb-2 line-clamp-1">
                           {product.name}
