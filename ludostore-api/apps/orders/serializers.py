@@ -11,18 +11,14 @@ from .models import Order, OrderItem
 
 class OrderItemSerializer(serializers.ModelSerializer):
     """Serializer for order items."""
+    customization_images = serializers.ListField(child=serializers.URLField(), read_only=True)
 
     class Meta:
         model = OrderItem
         fields = [
-            "id",
-            "product",
-            "product_name",
-            "product_sku",
-            "product_image",
-            "quantity",
-            "price_at_purchase",
-            "subtotal",
+            'id', 'product', 'product_name', 'product_sku',
+            'product_image', 'quantity', 'price_at_purchase', 'subtotal',
+            'customization_images', 'created_at'
         ]
 
 

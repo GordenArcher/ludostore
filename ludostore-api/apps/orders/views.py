@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from apps.notifications.services.email_service import EmailService
-from apps.orders.models import Order
+from apps.orders.models import Order, OrderItem
 from common.utils.pagination import get_pagination_params
 from common.utils.request_id import generate_request_id
 from common.utils.response import error_response, success_response
@@ -366,6 +366,11 @@ def get_order_by_number(request, order_number):
 def cancel_order(request, order_id):
     """
     Cancel order (only if status is pending).
+
+    When cancelling:
+    - Restore product stock
+    - Delete customization images from storage
+    - Update order status to cancelled
     """
     request_id = generate_request_id()
 
@@ -388,13 +393,20 @@ def cancel_order(request, order_id):
                 request_id=request_id,
             )
 
+        # Delete customization images from storage
+        from .utils import delete_customization_images
+
+        for item in order.items.all():
+            if item.customization_images:
+                delete_customization_images(str(item.id), item.customization_images)
+                logger.info(f"Deleted {len(item.customization_images)} customization images for order item {item.id}")
+
         # Restore stock
         for item in order.items.all():
             product = item.product
             product.stock_quantity += item.quantity
             product.save(update_fields=["stock_quantity"])
 
-        # Update order status
         order.order_status = Order.OrderStatus.CANCELLED
         order.save(update_fields=["order_status"])
 
@@ -416,4 +428,280 @@ def cancel_order(request, order_id):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="CANCEL_ERROR",
             request_id=request_id,
+        )
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_customization_images(request, order_id, item_id):
+    """
+    Upload customization images for an order item.
+
+    Rules:
+    - Max 4 images per order item
+    - Max 5MB per image
+    - Only allowed if order status is pending or processing
+    - Allowed formats: JPEG, PNG, GIF, WEBP, BMP
+
+    Request: multipart/form-data with 'images' field (multiple files)
+    """
+    request_id = generate_request_id()
+
+    try:
+        # Get order and check ownership
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+        except Order.DoesNotExist:
+            return error_response(
+                message="Order not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_NOT_FOUND",
+                request_id=request_id
+            )
+
+        # Get order item
+        try:
+            item = OrderItem.objects.get(id=item_id, order=order)
+        except OrderItem.DoesNotExist:
+            return error_response(
+                message="Order item not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_ITEM_NOT_FOUND",
+                request_id=request_id
+            )
+
+        # Check if uploads are allowed
+        if not item.can_upload_images():
+            return error_response(
+                message=f"Cannot upload images. Order status is '{order.order_status}'. Only pending or processing orders allowed.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="UPLOAD_NOT_ALLOWED",
+                request_id=request_id
+            )
+
+        # Check current image count
+        current_images = item.customization_images or []
+        if len(current_images) >= 4:
+            return error_response(
+                message="Maximum 4 images allowed per item",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="MAX_IMAGES_REACHED",
+                request_id=request_id
+            )
+
+        # Get uploaded files
+        files = request.FILES.getlist('images')
+
+        if not files:
+            return error_response(
+                message="No images provided",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="NO_IMAGES",
+                request_id=request_id
+            )
+
+        # Calculate remaining slots
+        remaining_slots = 4 - len(current_images)
+
+        if len(files) > remaining_slots:
+            return error_response(
+                message=f"Too many images. You can only add {remaining_slots} more image(s)",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="TOO_MANY_IMAGES",
+                request_id=request_id
+            )
+
+        # Validate files
+        from common.utils.file_validation import validate_multiple_images
+        is_valid, valid_files, error = validate_multiple_images(files, max_files=remaining_slots, max_size_mb=5)
+
+        if not is_valid:
+            return error_response(
+                message="Image validation failed",
+                errors=error,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="INVALID_IMAGES",
+                request_id=request_id
+            )
+
+        from .utils import save_customization_images
+        saved_urls = save_customization_images(str(item.id), valid_files)
+
+        new_images = current_images + saved_urls
+        item.customization_images = new_images
+        item.save(update_fields=['customization_images'])
+
+        logger.info(f"Uploaded {len(saved_urls)} images for order item {item_id} by {request.user.email}")
+
+        return success_response(
+            message=f"Successfully uploaded {len(saved_urls)} image(s)",
+            data={
+                'item_id': str(item.id),
+                'customization_images': new_images,
+                'uploaded': saved_urls,
+                'total_images': len(new_images),
+                'remaining_slots': 4 - len(new_images),
+            },
+            status_code=status.HTTP_200_OK,
+            code="IMAGES_UPLOADED",
+            request_id=request_id
+        )
+
+    except Exception as e:
+        logger.exception(f"Error uploading customization images: {e}")
+        return error_response(
+            message="Failed to upload images",
+            errors="An error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="UPLOAD_ERROR",
+            request_id=request_id
+        )
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_customization_image(request, order_id, item_id, image_index):
+    """
+    Delete a specific customization image from an order item.
+
+    URL param: image_index, Index of image to delete (0-based)
+    """
+    request_id = generate_request_id()
+
+    try:
+        # Get order and check ownership
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+        except Order.DoesNotExist:
+            return error_response(
+                message="Order not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_NOT_FOUND",
+                request_id=request_id
+            )
+
+        # Get order item
+        try:
+            item = OrderItem.objects.get(id=item_id, order=order)
+        except OrderItem.DoesNotExist:
+            return error_response(
+                message="Order item not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_ITEM_NOT_FOUND",
+                request_id=request_id
+            )
+
+        # Check if deletion is allowed
+        if not item.can_delete_images():
+            return error_response(
+                message=f"Cannot delete images. Order status is '{order.order_status}'",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="DELETE_NOT_ALLOWED",
+                request_id=request_id
+            )
+
+        current_images = item.customization_images or []
+
+        if image_index < 0 or image_index >= len(current_images):
+            return error_response(
+                message="Invalid image index",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code="INVALID_INDEX",
+                request_id=request_id
+            )
+
+
+        image_url = current_images[image_index]
+
+        from .utils import delete_customization_images
+        delete_customization_images(str(item.id), [image_url])
+
+        current_images.pop(image_index)
+        item.customization_images = current_images
+        item.save(update_fields=['customization_images'])
+
+        logger.info(f"Deleted image {image_index} from order item {item_id} by {request.user.email}")
+
+        return success_response(
+            message="Image deleted successfully",
+            data={
+                'item_id': str(item.id),
+                'customization_images': current_images,
+                'total_images': len(current_images),
+                'remaining_slots': 4 - len(current_images),
+            },
+            status_code=status.HTTP_200_OK,
+            code="IMAGE_DELETED",
+            request_id=request_id
+        )
+
+    except Exception as e:
+        logger.exception(f"Error deleting customization image: {e}")
+        return error_response(
+            message="Failed to delete image",
+            errors="An error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="DELETE_ERROR",
+            request_id=request_id
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_customization_images(request, order_id, item_id):
+    """
+    Get all customization images for an order item.
+    """
+    request_id = generate_request_id()
+
+    try:
+        # Get order and check ownership
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+        except Order.DoesNotExist:
+            return error_response(
+                message="Order not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_NOT_FOUND",
+                request_id=request_id
+            )
+
+        # Get order item
+        try:
+            item = OrderItem.objects.get(id=item_id, order=order)
+        except OrderItem.DoesNotExist:
+            return error_response(
+                message="Order item not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="ORDER_ITEM_NOT_FOUND",
+                request_id=request_id
+            )
+
+        images = item.customization_images or []
+
+        return success_response(
+            message="Customization images retrieved",
+            data={
+                'item_id': str(item.id),
+                'product_name': item.product_name,
+                'customization_images': images,
+                'total_images': len(images),
+                'remaining_slots': 4 - len(images),
+                'can_upload': item.can_upload_images(),
+                'can_delete': item.can_delete_images(),
+            },
+            status_code=status.HTTP_200_OK,
+            request_id=request_id
+        )
+
+    except Exception as e:
+        logger.exception(f"Error getting customization images: {e}")
+        return error_response(
+            message="Failed to retrieve images",
+            errors="An error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="RETRIEVE_ERROR",
+            request_id=request_id
         )

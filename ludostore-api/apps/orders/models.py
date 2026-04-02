@@ -104,15 +104,21 @@ class Order(models.Model):
         return self.items.aggregate(total=models.Sum("quantity"))["total"] or 0
 
 
+
 class OrderItem(models.Model):
     """
-    Order items snapshot of cart items at checkout.
+    Order items, snapshot of cart items at checkout.
     """
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
     product = models.ForeignKey(
-        Product, on_delete=models.PROTECT, related_name="order_items"
+        Product,
+        on_delete=models.PROTECT,
+        related_name='order_items'
     )
 
     product_name = models.CharField(max_length=255)
@@ -123,10 +129,13 @@ class OrderItem(models.Model):
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
+
+    customization_images = models.JSONField(default=list, blank=True, help_text="Array of image URLs for customization (max 4)")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "order_items"
+        db_table = 'order_items'
 
     def __str__(self):
         return f"{self.quantity} x {self.product_name} - {self.order.order_number}"
@@ -134,3 +143,19 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal = self.price_at_purchase * self.quantity
         super().save(*args, **kwargs)
+
+    def can_upload_images(self) -> bool:
+        """Check if customization images can be uploaded for this item."""
+        # Cannot upload if order is shipped, delivered, or cancelled
+        forbidden_statuses = [
+            Order.OrderStatus.SHIPPED,
+            Order.OrderStatus.DELIVERED,
+            Order.OrderStatus.CANCELLED,
+            Order.OrderStatus.REFUNDED,
+        ]
+        return self.order.order_status not in forbidden_statuses
+
+    def can_delete_images(self) -> bool:
+        """Check if customization images can be deleted."""
+        # Same as upload, cannot delete after shipped
+        return self.can_upload_images()
