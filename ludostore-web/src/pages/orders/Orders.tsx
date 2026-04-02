@@ -1,4 +1,3 @@
-// pages/Orders.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -14,10 +13,13 @@ import {
   RefreshCw,
   ChevronRight,
   ChevronLeft,
+  Image,
 } from "lucide-react";
 import { useOrderStore } from "../../store/orderStore";
 import { ConfirmationModal } from "../../components/modals/ConfirmationModal";
 import OrdersSkeleton from "../../components/loading/ordersSkeleton";
+import { CustomImageModal } from "../../components/modals/CustomImageModal";
+import { getCustomizationImages } from "../../api/customImage";
 
 const statusConfig: Record<
   string,
@@ -67,6 +69,12 @@ const Orders = () => {
     useOrderStore();
   const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCustomImageModal, setShowCustomImageModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{
+    orderId: string;
+    itemId: string;
+    productName: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -80,10 +88,19 @@ const Orders = () => {
     setCancelOrderId(null);
   };
 
+  const handleCustomImageClick = (
+    orderId: string,
+    itemId: string,
+    productName: string,
+  ) => {
+    setSelectedItem({ orderId, itemId, productName });
+    setShowCustomImageModal(true);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-GH", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
@@ -153,6 +170,9 @@ const Orders = () => {
               const canCancel =
                 order.order_status === "pending" &&
                 order.payment_method === "cash";
+              const canCustomize =
+                order.order_status === "pending" ||
+                order.order_status === "processing";
               const firstItem = order.items[0];
               const hasMultipleItems = order.items.length > 1;
 
@@ -164,7 +184,6 @@ const Orders = () => {
                   transition={{ delay: index * 0.05 }}
                   className="bg-[#1e1e1e] rounded-xl border border-white/10 hover:border-yellow-500/30 transition-all overflow-hidden"
                 >
-                  {/* Order Header */}
                   <div className="p-5 border-b border-white/10 bg-[#1a1a1a]">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-4">
@@ -198,10 +217,8 @@ const Orders = () => {
                     </div>
                   </div>
 
-                  {/* Order Items */}
                   <div className="p-5">
                     <div className="flex gap-4">
-                      {/* Product Image */}
                       <div className="w-20 h-20 bg-[#2a2a2a] rounded-lg overflow-hidden flex-shrink-0">
                         <img
                           src={getImageUrl(firstItem?.product_image || "")}
@@ -255,7 +272,6 @@ const Orders = () => {
                       </div>
                     </div>
 
-                    {/* Shipping Address */}
                     <div className="mt-4 pt-4 border-t border-white/10">
                       <div className="flex items-start gap-2">
                         <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
@@ -277,20 +293,22 @@ const Orders = () => {
                             <br />
                             {order.shipping_address?.country}
                           </p>
-                          <p className="text-gray-500 text-xs mt-1">
-                            {order.shipping_address?.phone_number}
-                          </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 text-xs">
                           {order.total_items}{" "}
                           {order.total_items === 1 ? "item" : "items"}
                         </span>
+                        {canCustomize && (
+                          <span className="flex items-center gap-1 text-xs text-yellow-500">
+                            <Image className="w-3 h-3" />
+                            Customizable
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-3">
                         <Link
@@ -300,6 +318,21 @@ const Orders = () => {
                           <Eye className="w-4 h-4" />
                           View Details
                         </Link>
+                        {canCustomize && (
+                          <button
+                            onClick={() =>
+                              handleCustomImageClick(
+                                order.id,
+                                firstItem.id,
+                                firstItem.product_name,
+                              )
+                            }
+                            className="flex items-center gap-1.5 px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 rounded-lg text-sm transition-colors cursor-pointer"
+                          >
+                            <Image className="w-4 h-4" />
+                            Add Image
+                          </button>
+                        )}
                         {canCancel && (
                           <button
                             onClick={() => setCancelOrderId(order.id)}
@@ -325,7 +358,6 @@ const Orders = () => {
             })}
           </div>
 
-          {/* Pagination */}
           {pagination && pagination.total_pages > 1 && (
             <div className="flex items-center justify-center gap-3 mt-10">
               <button
@@ -390,6 +422,19 @@ const Orders = () => {
         type="danger"
         isLoading={isCancelling}
       />
+
+      {selectedItem && (
+        <CustomImageModal
+          isOpen={showCustomImageModal}
+          onClose={() => {
+            setShowCustomImageModal(false);
+            setSelectedItem(null);
+          }}
+          orderId={selectedItem.orderId}
+          itemId={selectedItem.itemId}
+          productName={selectedItem.productName}
+        />
+      )}
     </>
   );
 };

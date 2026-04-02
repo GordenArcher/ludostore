@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Star,
-  ShoppingCart,
-  Heart,
-  Crown,
-  Tag,
-  Package,
-  FileText,
-} from "lucide-react";
+import { ShoppingCart, Heart, Crown, Tag, Package } from "lucide-react";
 import type { Product } from "../types/product";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
@@ -41,7 +33,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const primaryImage =
     product.images?.find((img) => img.is_primary) || product.images?.[0];
   const imageUrl = primaryImage?.image
-    ? `http://localhost:8000${primaryImage.image}`
+    ? primaryImage.image
     : "https://via.placeholder.com/500x500?text=No+Image";
 
   const price = parseFloat(product.current_price);

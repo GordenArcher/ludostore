@@ -16,10 +16,11 @@ import { getDefaultAddress } from "../../api/address";
 import { checkout } from "../../api/order";
 import type { Address } from "../../types/address";
 import { AddressSelectionModal } from "../../components/modals/AddressSelectionModal";
+import { Spinner } from "../../components/loading/Spinner";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cart, clearCart, fetchCart } = useCartStore();
+  const { cart, fetchCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -67,8 +68,6 @@ const Checkout = () => {
       });
 
       if (response.status === "success") {
-        await clearCart();
-
         if (paymentMethod === "paystack" && response.data.payment) {
           window.location.href = response.data.payment.authorization_url;
         } else {
@@ -245,7 +244,7 @@ const Checkout = () => {
                         <img
                           src={
                             item.product_details.images?.[0]?.image
-                              ? `http://localhost:8000${item.product_details.images[0].image}`
+                              ? item.product_details.images[0].image
                               : "https://via.placeholder.com/48x48?text=No+Image"
                           }
                           alt={item.product_details.name}
@@ -296,7 +295,7 @@ const Checkout = () => {
                 >
                   {isPlacingOrder ? (
                     <>
-                      <Loader className="w-4 h-4 animate-spin" />
+                      <Spinner size="lg" color="white" />
                       Placing Order...
                     </>
                   ) : (

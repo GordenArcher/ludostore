@@ -32,7 +32,7 @@ export const AddToCartModal = ({
   const primaryImage =
     product.images?.find((img) => img.is_primary) || product.images?.[0];
   const imageUrl = primaryImage?.image
-    ? `http://localhost:8000${primaryImage.image}`
+    ? primaryImage.image
     : "https://via.placeholder.com/500x500?text=No+Image";
 
   const price = parseFloat(product.current_price);

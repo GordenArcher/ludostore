@@ -62,7 +62,7 @@ const Cart = () => {
 
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return "https://via.placeholder.com/500x500?text=No+Image";
-    return `http://localhost:8000${imagePath}`;
+    return imagePath;
   };
 
   const generateOrderDetails = () => {
