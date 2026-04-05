@@ -15,11 +15,13 @@ import {
   XCircle,
   Clock,
   RefreshCw,
+  ZoomIn,
 } from "lucide-react";
 import { getOrderDetail, updateOrderStatus } from "../../api/orders";
 import type { AdminOrderDetail } from "../../types/order";
 import { StatusUpdateModal } from "../../components/modal/statusUpdateModal";
 import OrderDetailSkeleton from "../../components/loader/orderDetailSkeleton";
+import { ImagePreviewModal } from "../../components/modal/ImagePreviewModal";
 
 const statusConfig: Record<
   string,
@@ -39,6 +41,10 @@ const OrderDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -110,7 +116,7 @@ const OrderDetail = () => {
           </button>
         </div>
 
-        <div className="bg-black rounded-xl border border-gray-800 overflow-hidden">
+        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
             <div className="flex items-center justify-between">
               <div>
@@ -119,7 +125,7 @@ const OrderDetail = () => {
                 </h1>
                 <div className="flex items-center gap-3 mt-2">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.color} bg-opacity-10 bg-current`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.color} bg-opacity-10 border ${status.color.replace("text-", "border-")}/20 bg-${status.color.replace("text-", "")}/10`}
                   >
                     <StatusIcon className="w-3 h-3" />
                     {status.label}
@@ -145,7 +151,7 @@ const OrderDetail = () => {
                   <User className="w-4 h-4 text-gray-400" />
                   Customer Information
                 </h2>
-                <div className="bg-gray-900 rounded-lg p-4 space-y-2">
+                <div className="bg-black rounded-lg p-4 space-y-2">
                   <p className="text-white">
                     {order.customer.first_name} {order.customer.last_name}
                   </p>
@@ -165,7 +171,7 @@ const OrderDetail = () => {
                   <MapPin className="w-4 h-4 text-gray-400" />
                   Shipping Address
                 </h2>
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-black rounded-lg p-4">
                   <p className="text-white">
                     {order.shipping_address.recipient_name}
                   </p>
@@ -201,7 +207,7 @@ const OrderDetail = () => {
                   )}
                   Payment Information
                 </h2>
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-black rounded-lg p-4">
                   <p className="text-white capitalize">
                     {order.payment_method === "cash"
                       ? "Cash on Delivery"
@@ -228,7 +234,7 @@ const OrderDetail = () => {
                 </h2>
                 <div className="space-y-3">
                   {order.items.map((item) => (
-                    <div key={item.id} className="bg-gray-900 rounded-lg p-4">
+                    <div key={item.id} className="bg-black rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-white font-medium">
@@ -254,14 +260,26 @@ const OrderDetail = () => {
                             <p className="text-gray-500 text-xs mb-2">
                               Customization Images:
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               {item.customization_images.map((img, idx) => (
-                                <img
+                                <button
                                   key={idx}
-                                  src={img}
-                                  alt={`Custom ${idx + 1}`}
-                                  className="w-12 h-12 rounded object-cover bg-gray-800"
-                                />
+                                  onClick={() => {
+                                    setPreviewImages(item.customization_images);
+                                    setPreviewIndex(idx);
+                                    setShowImagePreview(true);
+                                  }}
+                                  className="cursor-pointer group relative"
+                                >
+                                  <img
+                                    src={img}
+                                    alt=""
+                                    className="w-12 h-12 rounded object-cover bg-gray-800 hover:opacity-80 transition-opacity"
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded">
+                                    <ZoomIn className="w-4 h-4 text-white" />
+                                  </div>
+                                </button>
                               ))}
                             </div>
                           </div>
@@ -276,7 +294,7 @@ const OrderDetail = () => {
                   <h2 className="text-lg font-semibold text-white mb-3">
                     Admin Note
                   </h2>
-                  <div className="bg-gray-900 rounded-lg p-4">
+                  <div className="bg-black rounded-lg p-4">
                     <p className="text-gray-400 text-sm">{order.admin_note}</p>
                   </div>
                 </div>
@@ -287,7 +305,7 @@ const OrderDetail = () => {
                   <h2 className="text-lg font-semibold text-white mb-3">
                     Customer Note
                   </h2>
-                  <div className="bg-gray-900 rounded-lg p-4">
+                  <div className="bg-black rounded-lg p-4">
                     <p className="text-gray-400 text-sm">
                       {order.customer_note}
                     </p>
@@ -305,6 +323,13 @@ const OrderDetail = () => {
         onConfirm={handleStatusUpdate}
         currentStatus={order.order_status}
         isLoading={isUpdating}
+      />
+
+      <ImagePreviewModal
+        isOpen={showImagePreview}
+        onClose={() => setShowImagePreview(false)}
+        images={previewImages}
+        initialIndex={previewIndex}
       />
     </>
   );

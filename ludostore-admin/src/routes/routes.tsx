@@ -4,7 +4,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../components/protectedRoute";
 import Login from "../pages/auth/login";
 import Dashboard from "../pages/dashboard";
-import Products from "../pages/products";
+import Products from "../pages/product/products";
 import Orders from "../pages/orders/orders";
 import Customers from "../pages/customers";
 import Settings from "../pages/settings";

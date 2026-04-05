@@ -13,6 +13,8 @@ export interface AdminProduct {
   regular_price: string;
   sale_price: string | null;
   current_price: string;
+  category: string;
+  description: string;
   stock_quantity: number;
   stock_status: "in_stock" | "out_of_stock" | "backorder";
   category_name: string;
@@ -20,6 +22,7 @@ export interface AdminProduct {
   featured: boolean;
   images: ProductImage[];
   created_at: string;
+  updated_at: string;
 }
 
 export interface AdminCategory {

@@ -12,22 +12,24 @@ import {
   Shield,
   Ban,
   CheckCircle,
+  ChevronDown,
 } from "lucide-react";
 import { getUsers, updateUserStatus, updateUserRole } from "../api/users";
 import type { AdminUserItem } from "../types/user";
 import CustomersSkeleton from "../components/loader/customersSkeleton";
 import { ConfirmationModal } from "../components/modal/confirmationModal";
+import type { Pagination } from "../types/product";
 
 const roleColors: Record<string, string> = {
-  admin: "bg-purple-500/20 text-purple-500",
-  operator: "bg-blue-500/20 text-blue-500",
-  customer: "bg-green-500/20 text-green-500",
+  admin: "bg-purple-500/20 text-purple-500 border border-purple-500/20",
+  operator: "bg-blue-500/20 text-blue-500 border border-blue-500/20",
+  customer: "bg-green-500/20 text-green-500 border border-green-500/20",
 };
 
 const Customers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<AdminUserItem[]>([]);
-  const [pagination, setPagination] = useState<any>(null);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [roleFilter, setRoleFilter] = useState(searchParams.get("role") || "");
@@ -47,6 +49,8 @@ const Customers = () => {
   );
   const [isUpdating, setIsUpdating] = useState(false);
   const [blockReason, setBlockReason] = useState("");
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   useEffect(() => {
     const params: Record<string, string> = {};
@@ -121,6 +125,18 @@ const Customers = () => {
     setShowFilters(false);
   };
 
+  const getRoleLabel = () => {
+    if (roleFilter === "operator") return "Operator";
+    if (roleFilter === "customer") return "Customer";
+    return "All Roles";
+  };
+
+  const getStatusLabel = () => {
+    if (statusFilter === "active") return "Active";
+    if (statusFilter === "blocked") return "Blocked";
+    return "All Status";
+  };
+
   const hasActiveFilters = search || roleFilter || statusFilter;
 
   if (isLoading && users.length === 0) {
@@ -153,7 +169,7 @@ const Customers = () => {
           </button>
         </div>
 
-        <div className="bg-black rounded-xl border border-gray-800">
+        <div className="bg-gray-900 rounded-xl border border-gray-800">
           <div className="p-4 border-b border-gray-800">
             <div className="flex gap-3">
               <div className="flex-1 relative">
@@ -163,7 +179,7 @@ const Customers = () => {
                   placeholder="Search by name or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 transition-colors text-white placeholder-gray-500"
+                  className="w-full pl-9 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 transition-colors text-white placeholder-gray-500"
                 />
               </div>
             </div>
@@ -175,36 +191,148 @@ const Customers = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-4 border-b border-gray-800 bg-gray-900"
+                className="p-4 border-b border-gray-800 bg-black"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
                       Role
                     </label>
-                    <select
-                      value={roleFilter}
-                      onChange={(e) => setRoleFilter(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm"
-                    >
-                      <option value="">All Roles</option>
-                      <option value="operator">Operator</option>
-                      <option value="customer">Customer</option>
-                    </select>
+                    <div className="relative">
+                      <button
+                        onClick={() => {
+                          setShowRoleDropdown(!showRoleDropdown);
+                          setShowStatusDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                      >
+                        <span>{getRoleLabel()}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${showRoleDropdown ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {showRoleDropdown && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-10 overflow-hidden"
+                          >
+                            <button
+                              onClick={() => {
+                                setRoleFilter("");
+                                setShowRoleDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                roleFilter === ""
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              All Roles
+                            </button>
+                            <button
+                              onClick={() => {
+                                setRoleFilter("operator");
+                                setShowRoleDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                roleFilter === "operator"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Operator
+                            </button>
+                            <button
+                              onClick={() => {
+                                setRoleFilter("customer");
+                                setShowRoleDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                roleFilter === "customer"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Customer
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
                       Status
                     </label>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm"
-                    >
-                      <option value="">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="blocked">Blocked</option>
-                    </select>
+                    <div className="relative">
+                      <button
+                        onClick={() => {
+                          setShowStatusDropdown(!showStatusDropdown);
+                          setShowRoleDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                      >
+                        <span>{getStatusLabel()}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${showStatusDropdown ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {showStatusDropdown && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-10 overflow-hidden"
+                          >
+                            <button
+                              onClick={() => {
+                                setStatusFilter("");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === ""
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              All Status
+                            </button>
+                            <button
+                              onClick={() => {
+                                setStatusFilter("active");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === "active"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Active
+                            </button>
+                            <button
+                              onClick={() => {
+                                setStatusFilter("blocked");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === "blocked"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Blocked
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
                 {hasActiveFilters && (
@@ -224,7 +352,7 @@ const Customers = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-900 border-b border-gray-800">
+              <thead className="bg-black border-b border-gray-800">
                 <tr>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">
                     Customer
@@ -304,8 +432,8 @@ const Customers = () => {
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             user.account_status === "active"
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-red-500/20 text-red-500"
+                              ? "bg-green-500/20 text-green-500 border border-green-500/20"
+                              : "bg-red-500/20 text-red-500 border border-red-500/20"
                           }`}
                         >
                           {user.account_status}
@@ -320,7 +448,6 @@ const Customers = () => {
                               setShowRoleModal(true);
                             }}
                             className="p-1 text-gray-400 hover:text-yellow-500 transition-colors cursor-pointer"
-                            title="Change Role"
                           >
                             <Shield className="w-4 h-4" />
                           </button>
@@ -339,11 +466,6 @@ const Customers = () => {
                                 ? "text-red-400 hover:text-red-500"
                                 : "text-green-400 hover:text-green-500"
                             }`}
-                            title={
-                              user.account_status === "active"
-                                ? "Block User"
-                                : "Activate User"
-                            }
                           >
                             {user.account_status === "active" ? (
                               <Ban className="w-4 h-4" />
@@ -415,7 +537,7 @@ const Customers = () => {
               onChange={(e) => setBlockReason(e.target.value)}
               placeholder="Why is this user being blocked?"
               rows={2}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm resize-none"
+              className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 text-white text-sm resize-none"
             />
           </div>
         )}
@@ -439,14 +561,16 @@ const Customers = () => {
           <label className="block text-sm font-medium text-gray-300 mb-1">
             New Role
           </label>
-          <select
-            value={newRole}
-            onChange={(e) => setNewRole(e.target.value as any)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm"
-          >
-            <option value="customer">Customer</option>
-            <option value="operator">Operator</option>
-          </select>
+          <div className="relative">
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value as any)}
+              className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 text-white text-sm cursor-pointer"
+            >
+              <option value="customer">Customer</option>
+              <option value="operator">Operator</option>
+            </select>
+          </div>
         </div>
       </ConfirmationModal>
     </>

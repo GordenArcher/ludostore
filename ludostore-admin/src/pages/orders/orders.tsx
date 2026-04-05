@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -8,21 +8,22 @@ import {
   ChevronRight,
   Filter,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { getOrders } from "../../api/orders";
 import type { AdminOrder } from "../../types/order";
-import { Spinner } from "../../components/loader/spinner";
 import OrdersSkeleton from "../../components/loader/ordersSkeleton";
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-500/20 text-yellow-500",
-  processing: "bg-blue-500/20 text-blue-500",
-  shipped: "bg-purple-500/20 text-purple-500",
-  delivered: "bg-green-500/20 text-green-500",
-  cancelled: "bg-red-500/20 text-red-500",
+  pending: "bg-yellow-500/20 text-yellow-500 border border-yellow-500/20",
+  processing: "bg-blue-500/20 text-blue-500 border border-blue-500/20",
+  shipped: "bg-purple-500/20 text-purple-500 border border-purple-500/20",
+  delivered: "bg-green-500/20 text-green-500 border border-green-500/20",
+  cancelled: "bg-red-500/20 text-red-500 border border-red-500/20",
 };
 
 const Orders = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [pagination, setPagination] = useState<any>(null);
@@ -35,6 +36,7 @@ const Orders = () => {
     parseInt(searchParams.get("page") || "1"),
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   useEffect(() => {
     const params: Record<string, string> = {};
@@ -75,9 +77,19 @@ const Orders = () => {
     setCurrentPage(page);
   };
 
+  const getStatusLabel = () => {
+    if (statusFilter === "pending") return "Pending";
+    if (statusFilter === "processing") return "Processing";
+    if (statusFilter === "shipped") return "Shipped";
+    if (statusFilter === "delivered") return "Delivered";
+    if (statusFilter === "cancelled") return "Cancelled";
+    return "All Statuses";
+  };
+
   if (isLoading && orders.length === 0) {
     return <OrdersSkeleton />;
   }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -99,7 +111,7 @@ const Orders = () => {
         </button>
       </div>
 
-      <div className="bg-black rounded-xl border border-gray-800">
+      <div className="bg-gray-900 rounded-xl border border-gray-800">
         <div className="p-4 border-b border-gray-800">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -108,14 +120,14 @@ const Orders = () => {
               placeholder="Search by order number or customer email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 transition-colors text-white placeholder-gray-500"
+              className="w-full pl-9 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 transition-colors text-white placeholder-gray-500"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-900 border-b border-gray-800">
+            <thead className="bg-black border-b border-gray-800">
               <tr>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">
                   Order
@@ -149,7 +161,8 @@ const Orders = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.03 }}
-                    className="hover:bg-gray-900 transition-colors"
+                    className="hover:bg-gray-900 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/admin/orders/${order.id}`)}
                   >
                     <td className="px-4 py-3 text-sm font-medium text-white">
                       {order.order_number}
@@ -183,7 +196,8 @@ const Orders = () => {
                     <td className="px-4 py-3 text-right">
                       <Link
                         to={`/admin/orders/${order.id}`}
-                        className="p-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1 text-gray-400 hover:text-white transition-colors cursor-pointer inline-block"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
@@ -220,14 +234,15 @@ const Orders = () => {
         )}
       </div>
 
+      {/* Filters Modal */}
       <AnimatePresence>
         {showFilters && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-black rounded-xl w-full max-w-md mx-4 overflow-hidden border border-gray-800"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-gray-900 rounded-xl w-full max-w-md mx-4 overflow-hidden border border-gray-800 shadow-xl"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-800">
                 <h3 className="text-white font-semibold">Filter Orders</h3>
@@ -243,18 +258,107 @@ const Orders = () => {
                   <label className="block text-sm font-medium text-gray-300 mb-1">
                     Order Status
                   </label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white"
-                  >
-                    <option value="">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                      className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white text-sm flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                    >
+                      <span>{getStatusLabel()}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${showStatusDropdown ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {showStatusDropdown && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-0 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-10 overflow-hidden"
+                        >
+                          <button
+                            onClick={() => {
+                              setStatusFilter("");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === ""
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            All Statuses
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("pending");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === "pending"
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            Pending
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("processing");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === "processing"
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            Processing
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("shipped");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === "shipped"
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            Shipped
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("delivered");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === "delivered"
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            Delivered
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStatusFilter("cancelled");
+                              setShowStatusDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                              statusFilter === "cancelled"
+                                ? "text-yellow-500 bg-gray-800"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            Cancelled
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -265,7 +369,7 @@ const Orders = () => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Order number or customer email"
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white placeholder-gray-500"
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 text-white placeholder-gray-500"
                   />
                 </div>
               </div>

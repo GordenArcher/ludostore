@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   X,
+  Tag,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { LogoutModal } from "./modal/logoutModal";
@@ -16,7 +17,7 @@ import { LogoutModal } from "./modal/logoutModal";
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/products", label: "Products", icon: Package },
-  { path: "/admin/categories", label: "Products", icon: Package },
+  { path: "/admin/categories", label: "Categories", icon: Tag },
   { path: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { path: "/admin/customers", label: "Customers", icon: Users },
   { path: "/admin/settings", label: "Settings", icon: Settings },
@@ -39,9 +40,9 @@ const Sidebar = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-900 rounded-lg shadow-md cursor-pointer"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-900 rounded-lg shadow-md cursor-pointer border border-gray-800"
       >
-        <Menu className="w-5 h-5 text-white" />
+        <Menu className="w-5 h-5 text-yellow-500" />
       </button>
 
       <aside
@@ -53,9 +54,9 @@ const Sidebar = () => {
           <div className="flex items-center justify-between mb-8">
             <NavLink
               to="/admin/dashboard"
-              className="text-xl font-bold text-white"
+              className="text-xl font-bold text-white cursor-pointer"
             >
-              Ludo<span className="text-gray-500">Admin</span>
+              Ludo<span className="text-yellow-500">Admin</span>
             </NavLink>
             <button
               onClick={() => setIsOpen(false)}
@@ -74,9 +75,9 @@ const Sidebar = () => {
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors cursor-pointer ${
                       isActive
-                        ? "bg-gray-800 text-white"
+                        ? "bg-gray-900 text-yellow-500"
                         : "text-gray-400 hover:bg-gray-900 hover:text-white"
                     }`
                   }

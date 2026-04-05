@@ -11,9 +11,9 @@ import {
   Trash2,
   Image,
   Upload,
-  Loader2,
   Check,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import { useProductStore } from "../../store/productStore";
 import {
@@ -24,32 +24,63 @@ import {
 } from "../../api/products";
 import { Spinner } from "../../components/loader/spinner";
 import { DeleteConfirmModal } from "../../components/modal/deleteConfirmModal";
+import { ProductFormModal } from "../../components/modal/productFormModal";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { selectedProduct, isLoading, fetchProduct, clearSelected } =
-    useProductStore();
+  const {
+    selectedProduct,
+    isLoading,
+    fetchProduct,
+    clearSelected,
+    categories,
+    fetchCategories,
+  } = useProductStore();
   const [editingStock, setEditingStock] = useState(false);
   const [stockValue, setStockValue] = useState(0);
   const [updatingStock, setUpdatingStock] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [stockError, setStockError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchProduct(id);
+      fetchCategories();
     }
     return () => {
       clearSelected();
     };
   }, [id]);
 
+  const validateStock = (value: number): boolean => {
+    if (value < 0) {
+      setStockError("Stock quantity cannot be negative");
+      return false;
+    }
+    if (value > 999999) {
+      setStockError("Stock quantity is too high");
+      return false;
+    }
+    setStockError(null);
+    return true;
+  };
+
+  const handleStockValueChange = (value: number) => {
+    setStockValue(value);
+    validateStock(value);
+  };
+
   const handleUpdateStock = async () => {
-    if (stockValue < 0) return;
+    if (!validateStock(stockValue)) {
+      return;
+    }
+
     setUpdatingStock(true);
     setErrorMessage(null);
     try {
@@ -67,9 +98,30 @@ const ProductDetail = () => {
     }
   };
 
+  const validateImage = (file: File): boolean => {
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage(
+        "Invalid file type. Please upload JPEG, PNG, WEBP, or GIF",
+      );
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("File size too large. Maximum size is 5MB");
+      return false;
+    }
+    return true;
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!validateImage(file)) {
+      e.target.value = "";
+      setTimeout(() => setErrorMessage(null), 3000);
+      return;
+    }
 
     setUploadingImage(true);
     setErrorMessage(null);
@@ -84,6 +136,7 @@ const ProductDetail = () => {
       );
     } finally {
       setUploadingImage(false);
+      e.target.value = "";
     }
   };
 
@@ -114,6 +167,28 @@ const ProductDetail = () => {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const getStockBadge = (quantity: number) => {
+    if (quantity === 0) {
+      return (
+        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 border border-red-500/20">
+          Out of Stock
+        </span>
+      );
+    }
+    if (quantity < 10) {
+      return (
+        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/20">
+          Low Stock ({quantity})
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 border border-green-500/20">
+        In Stock ({quantity})
+      </span>
+    );
   };
 
   if (isLoading) {
@@ -159,7 +234,7 @@ const ProductDetail = () => {
           </button>
           <div className="flex gap-3">
             <button
-              onClick={() => navigate(`/admin/products/${id}/edit`)}
+              onClick={() => setShowEditModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors cursor-pointer"
             >
               <Edit2 className="w-4 h-4" />
@@ -176,22 +251,33 @@ const ProductDetail = () => {
         </div>
 
         {successMessage && (
-          <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2"
+          >
             <Check className="w-4 h-4" />
             {successMessage}
-          </div>
+          </motion.div>
         )}
 
         {errorMessage && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm flex items-center gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm flex items-center gap-2"
+          >
             <AlertCircle className="w-4 h-4" />
             {errorMessage}
-          </div>
+          </motion.div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Images Section */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-black rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Image className="w-4 h-4 text-yellow-500" />
                 Product Images
@@ -201,7 +287,9 @@ const ProductDetail = () => {
                 {selectedProduct.images?.map((img) => (
                   <div key={img.id} className="relative group">
                     <div
-                      className={`flex items-center gap-3 p-2 rounded-lg border ${img.is_primary ? "border-yellow-500" : "border-gray-800"} bg-gray-900`}
+                      className={`flex items-center gap-3 p-2 rounded-lg border ${
+                        img.is_primary ? "border-yellow-500" : "border-gray-800"
+                      } bg-black`}
                     >
                       <img
                         src={img.image}
@@ -210,7 +298,8 @@ const ProductDetail = () => {
                       />
                       <div className="flex-1">
                         {img.is_primary && (
-                          <span className="text-xs text-yellow-500">
+                          <span className="text-xs text-yellow-500 flex items-center gap-1">
+                            <Star className="w-3 h-3" />
                             Primary
                           </span>
                         )}
@@ -240,18 +329,22 @@ const ProductDetail = () => {
                   )}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     onChange={handleImageUpload}
                     className="hidden"
                     disabled={uploadingImage}
                   />
                 </label>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Max file size: 5MB. Allowed: JPEG, PNG, WEBP, GIF
+                </p>
               </div>
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-black rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-white font-semibold mb-4">
                 Product Information
               </h2>
@@ -296,16 +389,31 @@ const ProductDetail = () => {
                       Status
                     </label>
                     <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs ${selectedProduct.is_active ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"}`}
+                      className={`inline-block px-2 py-1 rounded-full text-xs ${
+                        selectedProduct.is_active
+                          ? "bg-green-500/20 text-green-500 border border-green-500/20"
+                          : "bg-red-500/20 text-red-500 border border-red-500/20"
+                      }`}
                     >
                       {selectedProduct.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </div>
+
+                {selectedProduct.featured && (
+                  <div>
+                    <label className="text-gray-400 text-sm block mb-1">
+                      Featured
+                    </label>
+                    <span className="inline-block px-2 py-1 rounded-full text-xs bg-yellow-500/20 text-yellow-500 border border-yellow-500/20">
+                      Featured Product
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="bg-black rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-yellow-500" />
                 Pricing
@@ -334,53 +442,65 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="bg-black rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Box className="w-4 h-4 text-yellow-500" />
                 Stock Management
               </h2>
 
               {editingStock ? (
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    value={stockValue}
-                    onChange={(e) =>
-                      setStockValue(parseInt(e.target.value) || 0)
-                    }
-                    className="w-32 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleUpdateStock}
-                    disabled={updatingStock}
-                    className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {updatingStock ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      "Save"
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setEditingStock(false)}
-                    className="px-4 py-2 border border-gray-700 text-gray-400 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={stockValue}
+                      onChange={(e) =>
+                        handleStockValueChange(parseInt(e.target.value) || 0)
+                      }
+                      className={`w-32 px-3 py-2 bg-black border rounded-lg focus:outline-none focus:border-yellow-500 text-white ${
+                        stockError ? "border-red-500" : "border-gray-700"
+                      }`}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleUpdateStock}
+                      disabled={updatingStock}
+                      className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      {updatingStock ? <Spinner size="lg" /> : "Save"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingStock(false);
+                        setStockError(null);
+                      }}
+                      className="px-4 py-2 border border-gray-700 text-gray-400 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {stockError && (
+                    <p className="text-red-500 text-xs">{stockError}</p>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-white">
-                      {selectedProduct.stock_quantity}
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-bold text-white">
+                        {selectedProduct.stock_quantity}
+                      </p>
+                      {getStockBadge(selectedProduct.stock_quantity)}
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">
+                      units available
                     </p>
-                    <p className="text-sm text-gray-400">units available</p>
                   </div>
                   <button
                     onClick={() => {
                       setEditingStock(true);
                       setStockValue(selectedProduct.stock_quantity);
+                      setStockError(null);
                     }}
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors cursor-pointer"
                   >
@@ -390,30 +510,44 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <div className="bg-black rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-yellow-500" />
                 Meta Information
               </h2>
 
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between py-1">
                   <span className="text-gray-400 text-sm">Created</span>
                   <span className="text-white text-sm">
                     {new Date(selectedProduct.created_at).toLocaleString()}
                   </span>
                 </div>
-                {selectedProduct.featured && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">Featured</span>
-                    <span className="text-yellow-500 text-sm">Yes</span>
-                  </div>
-                )}
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-400 text-sm">Last Updated</span>
+                  <span className="text-white text-sm">
+                    {new Date(selectedProduct.updated_at).toLocaleString()}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </motion.div>
+
+      <ProductFormModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+        }}
+        onSuccess={() => {
+          fetchProduct(id!);
+          setSuccessMessage("Product updated successfully!");
+          setTimeout(() => setSuccessMessage(null), 3000);
+        }}
+        product={selectedProduct}
+        categories={categories}
+      />
 
       <DeleteConfirmModal
         isOpen={showDeleteModal}

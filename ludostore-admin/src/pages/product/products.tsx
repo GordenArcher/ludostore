@@ -11,12 +11,13 @@ import {
   ChevronRight,
   Filter,
   X,
+  ChevronDown,
 } from "lucide-react";
-import { useProductStore } from "../store/productStore";
-import { updateProductStock } from "../api/products";
-import ProductsSkeleton from "../components/loader/productsSkeleton";
-import { ProductFormModal } from "../components/modal/productFormModal";
-import { DeleteConfirmModal } from "../components/modal/deleteConfirmModal";
+import { useProductStore } from "../../store/productStore";
+import { updateProductStock } from "../../api/products";
+import ProductsSkeleton from "../../components/loader/productsSkeleton";
+import { ProductFormModal } from "../../components/modal/productFormModal";
+import { DeleteConfirmModal } from "../../components/modal/deleteConfirmModal";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,6 +50,8 @@ const Products = () => {
   const [editingStock, setEditingStock] = useState<string | null>(null);
   const [stockValue, setStockValue] = useState<number>(0);
   const [updatingStock, setUpdatingStock] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -115,20 +118,20 @@ const Products = () => {
   const getStockBadge = (quantity: number) => {
     if (quantity === 0) {
       return (
-        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-500">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 border border-red-500/20">
           Out of Stock
         </span>
       );
     }
     if (quantity < 10) {
       return (
-        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/20">
           Low Stock ({quantity})
         </span>
       );
     }
     return (
-      <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-500">
+      <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 border border-green-500/20">
         In Stock ({quantity})
       </span>
     );
@@ -143,6 +146,18 @@ const Products = () => {
 
   const hasActiveFilters =
     search || categoryFilter || statusFilter || lowStockFilter;
+
+  const getCategoryName = () => {
+    if (!categoryFilter) return "All Categories";
+    const category = categories.find((cat) => cat.id === categoryFilter);
+    return category ? category.name : "All Categories";
+  };
+
+  const getStatusLabel = () => {
+    if (statusFilter === "active") return "Active";
+    if (statusFilter === "inactive") return "Inactive";
+    return "All";
+  };
 
   if (isLoading && products.length === 0) {
     return <ProductsSkeleton />;
@@ -170,7 +185,7 @@ const Products = () => {
           </button>
         </div>
 
-        <div className="bg-black rounded-xl border border-gray-800">
+        <div className="bg-gray-900 rounded-xl border border-gray-800">
           <div className="p-4 border-b border-gray-800">
             <div className="flex gap-3">
               <div className="flex-1 relative">
@@ -180,7 +195,7 @@ const Products = () => {
                   placeholder="Search products by name or SKU..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 transition-colors text-white placeholder-gray-500"
+                  className="w-full pl-9 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 transition-colors text-white placeholder-gray-500"
                 />
               </div>
               <button
@@ -206,47 +221,151 @@ const Products = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-4 border-b border-gray-800 bg-gray-900"
+                className="p-4 border-b border-gray-800 bg-black"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Category Custom Dropdown */}
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
                       Category
                     </label>
-                    <select
-                      value={categoryFilter}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm"
-                    >
-                      <option value="">All Categories</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <button
+                        onClick={() => {
+                          setShowCategoryDropdown(!showCategoryDropdown);
+                          setShowStatusDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                      >
+                        <span>{getCategoryName()}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${showCategoryDropdown ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {showCategoryDropdown && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto"
+                          >
+                            <button
+                              onClick={() => {
+                                setCategoryFilter("");
+                                setShowCategoryDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                categoryFilter === ""
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              All Categories
+                            </button>
+                            {categories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                onClick={() => {
+                                  setCategoryFilter(cat.id);
+                                  setShowCategoryDropdown(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                  categoryFilter === cat.id
+                                    ? "text-yellow-500 bg-gray-800"
+                                    : "text-gray-300"
+                                }`}
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
+
+                  {/* Status Custom Dropdown */}
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
                       Status
                     </label>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 text-white text-sm"
-                    >
-                      <option value="">All</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                    <div className="relative">
+                      <button
+                        onClick={() => {
+                          setShowStatusDropdown(!showStatusDropdown);
+                          setShowCategoryDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                      >
+                        <span>{getStatusLabel()}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${showStatusDropdown ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {showStatusDropdown && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 mt-1 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-10"
+                          >
+                            <button
+                              onClick={() => {
+                                setStatusFilter("");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === ""
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              All
+                            </button>
+                            <button
+                              onClick={() => {
+                                setStatusFilter("active");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === "active"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Active
+                            </button>
+                            <button
+                              onClick={() => {
+                                setStatusFilter("inactive");
+                                setShowStatusDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer ${
+                                statusFilter === "inactive"
+                                  ? "text-yellow-500 bg-gray-800"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              Inactive
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
+
+                  {/* Low Stock Checkbox */}
                   <div className="flex items-end">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={lowStockFilter}
                         onChange={(e) => setLowStockFilter(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+                        className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-yellow-500 focus:ring-yellow-500 cursor-pointer"
                       />
                       <span className="text-sm text-gray-300">
                         Low Stock Only (≤ 5 units)
@@ -271,7 +390,7 @@ const Products = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-900 border-b border-gray-800">
+              <thead className="bg-black border-b border-gray-800">
                 <tr>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">
                     Product
@@ -306,7 +425,7 @@ const Products = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ delay: index * 0.03 }}
-                      className="hover:bg-gray-900 transition-colors"
+                      className="hover:bg-gray-900 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -341,18 +460,24 @@ const Products = () => {
                               onChange={(e) =>
                                 setStockValue(parseInt(e.target.value) || 0)
                               }
-                              className="w-20 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm focus:outline-none focus:border-gray-500 text-white"
+                              className="w-20 px-2 py-1 bg-gray-900 border border-gray-700 rounded text-sm focus:outline-none focus:border-yellow-500 text-white"
                               autoFocus
                             />
                             <button
-                              onClick={() => handleUpdateStock(product.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateStock(product.id);
+                              }}
                               disabled={updatingStock}
                               className="px-2 py-1 bg-yellow-500 hover:bg-yellow-400 text-black text-xs rounded transition-colors cursor-pointer"
                             >
                               Save
                             </button>
                             <button
-                              onClick={() => setEditingStock(null)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingStock(null);
+                              }}
                               className="px-2 py-1 border border-gray-700 text-gray-400 text-xs rounded hover:bg-gray-800 transition-colors cursor-pointer"
                             >
                               Cancel
@@ -360,7 +485,8 @@ const Products = () => {
                           </div>
                         ) : (
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setEditingStock(product.id);
                               setStockValue(product.stock_quantity);
                             }}
@@ -374,8 +500,8 @@ const Products = () => {
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             product.is_active
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-red-500/20 text-red-500"
+                              ? "bg-green-500/20 text-green-500 border border-green-500/20"
+                              : "bg-red-500/20 text-red-500 border border-red-500/20"
                           }`}
                         >
                           {product.is_active ? "Active" : "Inactive"}
@@ -383,7 +509,7 @@ const Products = () => {
                       </td>
                       <td className="px-4 py-3">
                         {product.featured && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500 border border-yellow-500/20">
                             Featured
                           </span>
                         )}
@@ -391,7 +517,8 @@ const Products = () => {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setEditingProduct(product);
                               setShowProductModal(true);
                             }}
@@ -400,7 +527,10 @@ const Products = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => setDeletingProduct(product)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingProduct(product);
+                            }}
                             className="p-1 text-red-400 hover:text-red-500 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -479,7 +609,6 @@ const Products = () => {
             low_stock: lowStockFilter || undefined,
           });
         }}
-        productId={deletingProduct?.id}
         productName={deletingProduct?.name}
       />
     </>
