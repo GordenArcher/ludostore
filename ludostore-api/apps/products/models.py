@@ -11,7 +11,7 @@ import uuid
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils.text import slugify
 
 
@@ -126,6 +126,27 @@ class ProductImage(models.Model):
         db_table = "product_images"
         ordering = ["order", "-created_at"]
         unique_together = ["product", "order"]
+
+    from django.db import transaction
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            if self._state.adding and self.order == 0:
+                last_order = (
+                    ProductImage.objects.select_for_update()
+                    .filter(product=self.product)
+                    .aggregate(max_order=Max("order"))
+                    .get("max_order")
+                )
+
+                self.order = (last_order or 0) + 1
+
+            if self.is_primary:
+                ProductImage.objects.filter(product=self.product).update(
+                    is_primary=False
+                )
+
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.product.name} - {self.order}"

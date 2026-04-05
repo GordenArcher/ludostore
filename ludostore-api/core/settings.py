@@ -122,7 +122,7 @@ RATE_LIMIT = {
     # "EXEMPT_PATHS": ["/api/v1/users/auth/login/"],
 }
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:8081"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:8081", "http://localhost:5174"]
 
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS

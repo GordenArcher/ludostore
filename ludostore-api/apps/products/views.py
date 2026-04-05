@@ -11,13 +11,14 @@ from decimal import Decimal
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from common.utils.pagination import get_pagination_params
 from common.utils.request_id import generate_request_id
 from common.utils.response import error_response, success_response
 
-from .models import Category
+from .models import Category, Product
 from .serializers import (
     CategorySerializer,
     ProductCreateSerializer,
@@ -306,25 +307,11 @@ def admin_update_category(request, category_id):
     """
     request_id = generate_request_id()
 
-    serializer = CategorySerializer(
-        data=request.data, partial=(request.method == "PATCH")
-    )
-
-    if not serializer.is_valid():
-        return error_response(
-            message="Category update failed",
-            errors=serializer.errors,
-            status_code=status.HTTP_400_BAD_REQUEST,
-            code="VALIDATION_ERROR",
-            request_id=request_id,
-        )
-
     try:
-        update_data = {
-            k: v for k, v in serializer.validated_data.items() if v is not None
-        }
         category = CategoryService.update_category(
-            request.user, category_id, update_data
+            user=request.user,
+            category_id=category_id,
+            data=request.data,
         )
 
         if not category:
@@ -351,11 +338,20 @@ def admin_update_category(request, category_id):
             request_id=request_id,
         )
 
+    except ValidationError as e:
+        return error_response(
+            message="Category update failed",
+            errors=e.detail,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            code="VALIDATION_ERROR",
+            request_id=request_id,
+        )
+
     except Exception as e:
         logger.exception(f"Error updating category {category_id}: {e}")
         return error_response(
             message="Category update failed",
-            errors="An error occurred.",
+            errors="An unexpected error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="CATEGORY_UPDATE_ERROR",
             request_id=request_id,
@@ -466,8 +462,18 @@ def admin_update_product(request, product_id):
     """
     request_id = generate_request_id()
 
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return error_response(
+            message="Product not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            code="PRODUCT_NOT_FOUND",
+            request_id=request_id,
+        )
+
     serializer = ProductUpdateSerializer(
-        data=request.data, partial=(request.method == "PATCH")
+        instance=product, data=request.data, partial=(request.method == "PATCH")
     )
 
     if not serializer.is_valid():
@@ -483,15 +489,7 @@ def admin_update_product(request, product_id):
         update_data = {
             k: v for k, v in serializer.validated_data.items() if v is not None
         }
-        product = ProductService.update_product(request.user, product_id, update_data)
-
-        if not product:
-            return error_response(
-                message="Product not found",
-                status_code=status.HTTP_404_NOT_FOUND,
-                code="PRODUCT_NOT_FOUND",
-                request_id=request_id,
-            )
+        product = ProductService.update_product(request.user, product, update_data)
 
         return success_response(
             message="Product updated successfully",

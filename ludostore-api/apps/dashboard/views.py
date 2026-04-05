@@ -25,6 +25,7 @@ from apps.accounts.models import User, UserAccount
 from apps.orders.models import Order
 from apps.products.models import Product, ProductImage
 from common.utils.check_operator import check_operator
+from common.utils.file_validation import validate_image_file
 from common.utils.pagination import get_pagination_params
 from common.utils.request_id import generate_request_id
 from common.utils.response import error_response, success_response
@@ -379,6 +380,15 @@ def operator_orders(request):
 
         orders_data = []
         for order in page_obj.object_list:
+            # Check if any items have customization images
+            has_custom_images = False
+            custom_items_count = 0
+
+            for item in order.items.all():
+                if item.customization_images and len(item.customization_images) > 0:
+                    has_custom_images = True
+                    custom_items_count += 1
+
             orders_data.append(
                 {
                     "id": str(order.id),
@@ -391,6 +401,8 @@ def operator_orders(request):
                     "payment_status": order.payment_status,
                     "created_at": order.created_at.isoformat(),
                     "items_count": order.items.count(),
+                    "has_customization_images": has_custom_images,
+                    "customization_items_count": custom_items_count,
                 }
             )
 
@@ -462,6 +474,7 @@ def operator_order_detail(request, order_id):
                     "quantity": item.quantity,
                     "price_at_purchase": str(item.price_at_purchase),
                     "subtotal": str(item.subtotal),
+                    "customization_images": item.customization_images or [],
                 }
             )
 
@@ -657,7 +670,18 @@ def operator_products(request):
 
         products_data = []
         for product in page_obj.object_list:
-            primary_image = product.images.filter(is_primary=True).first()
+            # Get all images for this product
+            product_images = []
+            for img in product.images.all().order_by("order", "-is_primary"):
+                product_images.append(
+                    {
+                        "id": str(img.id),
+                        "image_url": img.image.url,
+                        "is_primary": img.is_primary,
+                        "order": img.order,
+                    }
+                )
+
             products_data.append(
                 {
                     "id": str(product.id),
@@ -671,12 +695,13 @@ def operator_products(request):
                     "current_price": str(product.current_price),
                     "stock_quantity": product.stock_quantity,
                     "stock_status": product.stock_status,
+                    "description": product.description,
                     "category_name": product.category.name
                     if product.category
                     else None,
                     "is_active": product.is_active,
                     "featured": product.featured,
-                    "primary_image": primary_image.image.url if primary_image else None,
+                    "images": product_images,
                     "created_at": product.created_at.isoformat(),
                 }
             )
@@ -842,6 +867,13 @@ def add_product_image(request, product_id):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="MISSING_IMAGE",
                 request_id=request_id,
+            )
+
+        validate_image, error = validate_image_file(image_file)
+
+        if not validate_image:
+            return error_response(
+                message=error, code="VALIDATION_ERROR", request_id=request_id
             )
 
         is_primary = request.data.get("is_primary", "").lower() == "true"

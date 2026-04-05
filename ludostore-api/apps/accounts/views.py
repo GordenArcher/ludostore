@@ -246,7 +246,7 @@ def login(request):
     if error:
         return error_response(
             message=error["error"],
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             code=error.get("code", "AUTHENTICATION_FAILED"),
             request_id=request_id,
         )
@@ -331,7 +331,7 @@ def operator_login(request):
     if error:
         return error_response(
             message=error["error"],
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             code=error.get("code", "AUTHENTICATION_FAILED"),
             request_id=request_id,
         )
