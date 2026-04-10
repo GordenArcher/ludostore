@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart,
@@ -29,7 +29,6 @@ import { AddToWishlistModal } from "../../components/modals/AddToWishlistModal";
 
 const ProductDetail = () => {
   const { productId } = useParams();
-  const navigate = useNavigate();
   const { selectedProduct, isLoadingProduct, fetchProductById, error } =
     useProductStore();
   const { isAuthenticated } = useAuthStore();
@@ -107,14 +106,12 @@ const ProductDetail = () => {
     if (selectedProduct?.images) {
       const primaryImage = selectedProduct.images.find((img) => img.is_primary);
       if (primaryImage) {
-        setSelectedImage(`http://localhost:8000${primaryImage.image}`);
+        setSelectedImage(primaryImage.image);
         setSelectedImageIndex(
           selectedProduct.images.findIndex((img) => img.id === primaryImage.id),
         );
       } else if (selectedProduct.images[0]) {
-        setSelectedImage(
-          `http://localhost:8000${selectedProduct.images[0].image}`,
-        );
+        setSelectedImage(selectedProduct.images[0].image);
         setSelectedImageIndex(0);
       }
     }
@@ -150,9 +147,7 @@ const ProductDetail = () => {
       const nextIndex =
         (selectedImageIndex + 1) % selectedProduct.images.length;
       setSelectedImageIndex(nextIndex);
-      setSelectedImage(
-        `http://localhost:8000${selectedProduct.images[nextIndex].image}`,
-      );
+      setSelectedImage(selectedProduct.images[nextIndex].image);
     }
   };
 
@@ -162,9 +157,7 @@ const ProductDetail = () => {
         (selectedImageIndex - 1 + selectedProduct.images.length) %
         selectedProduct.images.length;
       setSelectedImageIndex(prevIndex);
-      setSelectedImage(
-        `http://localhost:8000${selectedProduct.images[prevIndex].image}`,
-      );
+      setSelectedImage(selectedProduct.images[prevIndex].image);
     }
   };
 
@@ -298,7 +291,7 @@ const ProductDetail = () => {
                   className="grid grid-cols-4 gap-3"
                 >
                   {selectedProduct.images.map((image, index) => {
-                    const imageUrl = `http://localhost:8000${image.image}`;
+                    const imageUrl = image.image;
                     const isActive = selectedImage === imageUrl;
                     return (
                       <button
@@ -535,7 +528,7 @@ const ProductDetail = () => {
               {selectedProduct.images.length > 1 && (
                 <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
                   {selectedProduct.images.map((image, index) => {
-                    const imageUrl = `http://localhost:8000${image.image}`;
+                    const imageUrl = image.image;
                     const isActive = selectedImage === imageUrl;
                     return (
                       <button

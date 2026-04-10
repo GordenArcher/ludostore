@@ -14,16 +14,17 @@ import {
   ChevronRight,
   ChevronLeft,
   Image,
+  type LucideIcon,
 } from "lucide-react";
 import { useOrderStore } from "../../store/orderStore";
 import { ConfirmationModal } from "../../components/modals/ConfirmationModal";
 import OrdersSkeleton from "../../components/loading/ordersSkeleton";
 import { CustomImageModal } from "../../components/modals/CustomImageModal";
-import { getCustomizationImages } from "../../api/customImage";
+import { PayNowModal } from "../../components/modals/PayNowModal";
 
 const statusConfig: Record<
   string,
-  { label: string; color: string; bgColor: string; icon: any }
+  { label: string; color: string; bgColor: string; icon: LucideIcon }
 > = {
   pending: {
     label: "Pending",
@@ -70,10 +71,17 @@ const Orders = () => {
   const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCustomImageModal, setShowCustomImageModal] = useState(false);
+  const [showPayNowModal, setShowPayNowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
     orderId: string;
     itemId: string;
     productName: string;
+  } | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<{
+    id: string;
+    orderNumber: string;
+    reference: string;
+    total: string;
   } | null>(null);
 
   useEffect(() => {
@@ -97,6 +105,20 @@ const Orders = () => {
     setShowCustomImageModal(true);
   };
 
+  const handlePayNow = (order: any) => {
+    setSelectedOrder({
+      id: order.id,
+      orderNumber: order.order_number,
+      reference: order.paystack_reference,
+      total: order.total,
+    });
+    setShowPayNowModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    fetchOrders();
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-GH", {
       year: "numeric",
@@ -111,7 +133,7 @@ const Orders = () => {
 
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return "https://via.placeholder.com/80x80?text=No+Image";
-    return `http://localhost:8000${imagePath}`;
+    return imagePath;
   };
 
   if (isLoading) {
@@ -173,6 +195,10 @@ const Orders = () => {
               const canCustomize =
                 order.order_status === "pending" ||
                 order.order_status === "processing";
+              const canPayNow =
+                order.order_status === "pending" &&
+                order.payment_method === "paystack" &&
+                order.payment_status === "pending";
               const firstItem = order.items[0];
               const hasMultipleItems = order.items.length > 1;
 
@@ -219,7 +245,7 @@ const Orders = () => {
 
                   <div className="p-5">
                     <div className="flex gap-4">
-                      <div className="w-20 h-20 bg-[#2a2a2a] rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 bg-[#2a2a2a] rounded-lg overflow-hidden shrink-0">
                         <img
                           src={getImageUrl(firstItem?.product_image || "")}
                           alt={firstItem?.product_name}
@@ -342,14 +368,15 @@ const Orders = () => {
                             Cancel Order
                           </button>
                         )}
-                        {order.order_status === "pending" &&
-                          order.payment_method === "paystack" &&
-                          order.payment_status === "pending" && (
-                            <button className="flex items-center gap-1.5 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg text-sm transition-colors cursor-pointer">
-                              <CreditCard className="w-4 h-4" />
-                              Pay Now
-                            </button>
-                          )}
+                        {canPayNow && (
+                          <button
+                            onClick={() => handlePayNow(order)}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg text-sm transition-colors cursor-pointer"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            Pay Now
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -433,6 +460,21 @@ const Orders = () => {
           orderId={selectedItem.orderId}
           itemId={selectedItem.itemId}
           productName={selectedItem.productName}
+        />
+      )}
+
+      {selectedOrder && (
+        <PayNowModal
+          isOpen={showPayNowModal}
+          onClose={() => {
+            setShowPayNowModal(false);
+            setSelectedOrder(null);
+          }}
+          onSuccess={handlePaymentSuccess}
+          orderId={selectedOrder.id}
+          orderNumber={selectedOrder.orderNumber}
+          reference={selectedOrder.reference}
+          amount={selectedOrder.total}
         />
       )}
     </>
