@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Package,
@@ -14,6 +14,8 @@ import {
   Check,
   AlertCircle,
   Star,
+  Trash2 as TrashIcon,
+  ZoomIn,
 } from "lucide-react";
 import { useProductStore } from "../../store/productStore";
 import {
@@ -21,10 +23,13 @@ import {
   addProductImage,
   updateProduct,
   deleteProduct,
+  deleteProductImage,
 } from "../../api/products";
 import { Spinner } from "../../components/loader/spinner";
 import { DeleteConfirmModal } from "../../components/modal/deleteConfirmModal";
 import { ProductFormModal } from "../../components/modal/productFormModal";
+import { ImagePreviewModal } from "../../components/modal/ImagePreviewModal";
+import ProductDetailSkeleton from "../../components/loader/productDetailSkeleton";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -47,6 +52,11 @@ const ProductDetail = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [stockError, setStockError] = useState<string | null>(null);
+  const [deletingImage, setDeletingImage] = useState<string | null>(null);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -154,6 +164,24 @@ const ProductDetail = () => {
     }
   };
 
+  const handleDeleteImage = async (imageId: string) => {
+    setIsDeletingImage(true);
+    setErrorMessage(null);
+    try {
+      await deleteProductImage(id!, imageId);
+      await fetchProduct(id!);
+      setSuccessMessage("Image deleted successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.message || "Failed to delete image",
+      );
+    } finally {
+      setIsDeletingImage(false);
+      setDeletingImage(null);
+    }
+  };
+
   const handleDeleteProduct = async () => {
     setIsDeleting(true);
     try {
@@ -167,6 +195,13 @@ const ProductDetail = () => {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleImageClick = (index: number) => {
+    const allImages = selectedProduct?.images.map((img) => img.image) || [];
+    setPreviewImages(allImages);
+    setPreviewIndex(index);
+    setShowImagePreview(true);
   };
 
   const getStockBadge = (quantity: number) => {
@@ -192,16 +227,12 @@ const ProductDetail = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!selectedProduct) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 px-4">
         <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
         <h2 className="text-white text-xl font-semibold mb-2">
           Product Not Found
@@ -222,12 +253,12 @@ const ProductDetail = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="space-y-6"
+        className="space-y-6 px-4 sm:px-0"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             onClick={() => navigate("/admin/products")}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Products
@@ -250,71 +281,102 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2"
-          >
-            <Check className="w-4 h-4" />
-            {successMessage}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2"
+            >
+              <Check className="w-4 h-4" />
+              {successMessage}
+            </motion.div>
+          )}
 
-        {errorMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm flex items-center gap-2"
-          >
-            <AlertCircle className="w-4 h-4" />
-            {errorMessage}
-          </motion.div>
-        )}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm flex items-center gap-2"
+            >
+              <AlertCircle className="w-4 h-4" />
+              {errorMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Images Section */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Image className="w-4 h-4 text-yellow-500" />
                 Product Images
+                <span className="text-xs text-gray-500 ml-2">
+                  ({selectedProduct.images?.length || 0})
+                </span>
               </h2>
 
-              <div className="space-y-3">
-                {selectedProduct.images?.map((img) => (
-                  <div key={img.id} className="relative group">
-                    <div
-                      className={`flex items-center gap-3 p-2 rounded-lg border ${
-                        img.is_primary ? "border-yellow-500" : "border-gray-800"
-                      } bg-black`}
+              <div className="space-y-3 max-h-125 overflow-y-auto pr-1">
+                <AnimatePresence mode="popLayout">
+                  {selectedProduct.images?.map((img, idx) => (
+                    <motion.div
+                      key={img.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      layout
+                      className="relative group"
                     >
-                      <img
-                        src={img.image}
-                        alt=""
-                        className="w-12 h-12 rounded-lg object-cover bg-gray-800"
-                      />
-                      <div className="flex-1">
-                        {img.is_primary && (
-                          <span className="text-xs text-yellow-500 flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            Primary
-                          </span>
-                        )}
-                      </div>
-                      {!img.is_primary && (
+                      <div
+                        className={`flex items-center gap-3 p-2 rounded-lg border ${
+                          img.is_primary
+                            ? "border-yellow-500"
+                            : "border-gray-800"
+                        } bg-black`}
+                      >
                         <button
-                          onClick={() => handleSetPrimary(img.id)}
-                          className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded transition-colors cursor-pointer"
+                          onClick={() => handleImageClick(idx)}
+                          className="relative group/image cursor-pointer"
                         >
-                          Set Primary
+                          <img
+                            src={img.image}
+                            alt=""
+                            className="w-12 h-12 rounded-lg object-cover bg-gray-800"
+                          />
+                          <div className="absolute inset-0 bg-black/50 rounded-lg opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center">
+                            <ZoomIn className="w-4 h-4 text-white" />
+                          </div>
                         </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        <div className="flex-1">
+                          {img.is_primary && (
+                            <span className="text-xs text-yellow-500 flex items-center gap-1">
+                              <Star className="w-3 h-3" />
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!img.is_primary && (
+                            <button
+                              onClick={() => handleSetPrimary(img.id)}
+                              className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded transition-colors cursor-pointer"
+                            >
+                              Set Primary
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setDeletingImage(img.id)}
+                            className="p-1 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
                 <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-700 rounded-lg hover:border-yellow-500 transition-colors cursor-pointer">
                   {uploadingImage ? (
@@ -342,45 +404,47 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5">
               <h2 className="text-white font-semibold mb-4">
                 Product Information
               </h2>
 
               <div className="space-y-4">
-                <div>
-                  <label className="text-gray-400 text-sm block mb-1">
-                    Name
-                  </label>
-                  <p className="text-white text-lg font-medium">
-                    {selectedProduct.name}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-gray-400 text-sm block mb-1">
-                    SKU
-                  </label>
-                  <p className="text-white">{selectedProduct.sku}</p>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
+                  <div className="flex-1">
+                    <label className="text-gray-400 text-sm block mb-1">
+                      Name
+                    </label>
+                    <p className="text-white text-lg font-medium wrap-break-word">
+                      {selectedProduct.name}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-gray-400 text-sm block mb-1">
+                      SKU
+                    </label>
+                    <p className="text-white wrap-break-word">
+                      {selectedProduct.sku}
+                    </p>
+                  </div>
                 </div>
 
                 <div>
                   <label className="text-gray-400 text-sm block mb-1">
                     Description
                   </label>
-                  <p className="text-gray-300">
+                  <p className="text-gray-300 wrap-break-word">
                     {selectedProduct.description || "No description"}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-gray-400 text-sm block mb-1">
                       Category
                     </label>
-                    <p className="text-white">
+                    <p className="text-white wrap-break-word">
                       {selectedProduct.category_name}
                     </p>
                   </div>
@@ -413,18 +477,18 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-yellow-500" />
                 Pricing
               </h2>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-gray-400 text-sm block mb-1">
                     Regular Price
                   </label>
-                  <p className="text-white text-xl font-bold">
+                  <p className="text-white text-xl font-bold wrap-break-word">
                     GH₵{" "}
                     {parseFloat(selectedProduct.regular_price).toLocaleString()}
                   </p>
@@ -433,7 +497,7 @@ const ProductDetail = () => {
                   <label className="text-gray-400 text-sm block mb-1">
                     Sale Price
                   </label>
-                  <p className="text-white text-xl font-bold">
+                  <p className="text-white text-xl font-bold wrap-break-word">
                     {selectedProduct.sale_price
                       ? `GH₵ ${parseFloat(selectedProduct.sale_price).toLocaleString()}`
                       : "N/A"}
@@ -442,7 +506,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Box className="w-4 h-4 text-yellow-500" />
                 Stock Management
@@ -450,7 +514,7 @@ const ProductDetail = () => {
 
               {editingStock ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <input
                       type="number"
                       value={stockValue}
@@ -484,9 +548,9 @@ const ProductDetail = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p className="text-2xl font-bold text-white">
                         {selectedProduct.stock_quantity}
                       </p>
@@ -510,22 +574,22 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5">
               <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-yellow-500" />
                 Meta Information
               </h2>
 
               <div className="space-y-2">
-                <div className="flex justify-between py-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between py-1 gap-1">
                   <span className="text-gray-400 text-sm">Created</span>
-                  <span className="text-white text-sm">
+                  <span className="text-white text-sm wrap-break-word">
                     {new Date(selectedProduct.created_at).toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between py-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between py-1 gap-1">
                   <span className="text-gray-400 text-sm">Last Updated</span>
-                  <span className="text-white text-sm">
+                  <span className="text-white text-sm wrap-break-word">
                     {new Date(selectedProduct.updated_at).toLocaleString()}
                   </span>
                 </div>
@@ -557,6 +621,23 @@ const ProductDetail = () => {
         title="Delete Product"
         message={`Are you sure you want to delete "${selectedProduct.name}"? This action cannot be undone.`}
         isLoading={isDeleting}
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!deletingImage}
+        onClose={() => setDeletingImage(null)}
+        onSuccess={() => {}}
+        onDelete={() => handleDeleteImage(deletingImage!)}
+        title="Delete Image"
+        message="Are you sure you want to delete this image? This action cannot be undone."
+        isLoading={isDeletingImage}
+      />
+
+      <ImagePreviewModal
+        isOpen={showImagePreview}
+        onClose={() => setShowImagePreview(false)}
+        images={previewImages}
+        initialIndex={previewIndex}
       />
     </>
   );

@@ -20,7 +20,7 @@ const navItems = [
   { path: "/admin/categories", label: "Categories", icon: Tag },
   { path: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { path: "/admin/customers", label: "Customers", icon: Users },
-  { path: "/admin/settings", label: "Settings", icon: Settings },
+  // { path: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const Sidebar = () => {

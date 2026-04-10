@@ -16,6 +16,7 @@ import {
   Clock,
   RefreshCw,
   ZoomIn,
+  type LucideIcon,
 } from "lucide-react";
 import { getOrderDetail, updateOrderStatus } from "../../api/orders";
 import type { AdminOrderDetail } from "../../types/order";
@@ -25,7 +26,7 @@ import { ImagePreviewModal } from "../../components/modal/ImagePreviewModal";
 
 const statusConfig: Record<
   string,
-  { label: string; color: string; icon: any }
+  { label: string; color: string; icon: LucideIcon }
 > = {
   pending: { label: "Pending", color: "text-yellow-500", icon: Clock },
   processing: { label: "Processing", color: "text-blue-500", icon: RefreshCw },

@@ -1,6 +1,6 @@
 export interface ProductImage {
   id: string;
-  image_url: string;
+  image: string;
   is_primary: boolean;
   order: number;
 }

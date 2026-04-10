@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getCategories, deleteCategory } from "../api/categories";
-import type { AdminCategory } from "../types/product";
+import type { AdminCategory, Pagination } from "../types/product";
 import CategoriesSkeleton from "../components/loader/categoriesSkeleton";
 import { CategoryFormModal } from "../components/modal/categoryFormModal";
 import { DeleteConfirmModal } from "../components/modal/deleteConfirmModal";
@@ -18,7 +18,7 @@ import { DeleteConfirmModal } from "../components/modal/deleteConfirmModal";
 const Categories = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [pagination, setPagination] = useState<any>(null);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [currentPage, setCurrentPage] = useState(
@@ -83,7 +83,7 @@ const Categories = () => {
           </button>
         </div>
 
-        <div className="bg-black rounded-xl border border-gray-800">
+        <div className="bg-gray-900 rounded-xl border border-gray-800">
           <div className="p-4 border-b border-gray-800">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -92,14 +92,14 @@ const Categories = () => {
                 placeholder="Search categories..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 transition-colors text-white placeholder-gray-500"
+                className="w-full pl-9 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 transition-colors text-white placeholder-gray-500"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-900 border-b border-gray-800">
+              <thead className="bg-black border-b border-gray-800">
                 <tr>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">
                     Name
@@ -145,8 +145,8 @@ const Categories = () => {
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             category.is_active
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-red-500/20 text-red-500"
+                              ? "bg-green-500/20 text-green-500 border border-green-500/20"
+                              : "bg-red-500/20 text-red-500 border border-red-500/20"
                           }`}
                         >
                           {category.is_active ? "Active" : "Inactive"}
@@ -162,7 +162,7 @@ const Categories = () => {
                               setEditingCategory(category);
                               setShowModal(true);
                             }}
-                            className="p-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                            className="p-1 text-gray-400 hover:text-yellow-500 transition-colors cursor-pointer"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>

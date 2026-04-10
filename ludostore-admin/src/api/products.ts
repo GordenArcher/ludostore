@@ -63,7 +63,7 @@ export const updateProductStock = async (
   id: string,
   stockQuantity: number,
 ): Promise<void> => {
-  await axiosClient.patch(`/products/operator/products/${id}/stock/`, {
+  await axiosClient.patch(`/operator/products/${id}/stock/`, {
     stock_quantity: stockQuantity,
   });
 };
@@ -84,4 +84,14 @@ export const addProductImage = async (
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data.data;
+};
+
+export const deleteProductImage = async (
+  productId: string,
+  imageId: string,
+) => {
+  const response = await axiosClient.delete(
+    `/operator/products/${productId}/images/${imageId}/delete/`,
+  );
+  return response.data;
 };

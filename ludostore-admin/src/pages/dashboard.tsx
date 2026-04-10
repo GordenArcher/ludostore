@@ -41,6 +41,42 @@ const StatCardSkeleton = () => (
   </div>
 );
 
+const ChartSkeleton = () => (
+  <div className="h-80 flex items-center justify-center">
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+      <div className="w-full h-64 bg-gray-800/50 rounded-lg animate-pulse">
+        <div className="w-full h-full flex items-end gap-2 p-4">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 bg-gray-700 rounded-t-lg animate-pulse"
+              style={{
+                height: `${Math.random() * 100 + 40}px`,
+                animationDelay: `${i * 0.1}s`,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-3 w-20 bg-gray-800 rounded animate-pulse" />
+        <div className="h-3 w-20 bg-gray-800 rounded animate-pulse" />
+        <div className="h-3 w-20 bg-gray-800 rounded animate-pulse" />
+      </div>
+    </div>
+  </div>
+);
+
+const PieChartSkeleton = () => (
+  <div className="h-80 flex items-center justify-center">
+    <div className="relative w-48 h-48">
+      <div className="absolute inset-0 rounded-full border-8 border-gray-800 animate-pulse" />
+      <div className="absolute inset-4 rounded-full border-8 border-gray-700 animate-pulse" />
+      <div className="absolute inset-8 rounded-full border-8 border-gray-600 animate-pulse" />
+    </div>
+  </div>
+);
+
 const StatCard = ({ title, value, icon: Icon, trend, delay }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -97,7 +133,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         </p>
         {payload[0].payload.orders && (
           <p className="text-gray-400 text-xs mt-1">
-            📦 {payload[0].payload.orders} orders
+            {payload[0].payload.orders} orders
           </p>
         )}
       </div>
@@ -213,16 +249,6 @@ const Dashboard = () => {
               Welcome back! Here's what's happening with your store today.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-gray-900 rounded-full px-4 py-2 border border-gray-800">
-              <span className="text-sm text-gray-400">
-                Last updated: {new Date().toLocaleDateString()}
-              </span>
-            </div>
-            <button className="p-2 bg-gray-900 rounded-full border border-gray-800 hover:bg-gray-800 transition-colors cursor-pointer">
-              <MoreVertical className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -330,13 +356,7 @@ const Dashboard = () => {
             </div>
 
             {isChartLoading ? (
-              <div className="h-80 flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 border-3 border-gray-700 border-t-yellow-500 rounded-full"
-                />
-              </div>
+              <ChartSkeleton />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={revenueData}>
@@ -387,13 +407,7 @@ const Dashboard = () => {
               </p>
             </div>
             {isLoading ? (
-              <div className="h-80 flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 border-3 border-gray-700 border-t-yellow-500 rounded-full"
-                />
-              </div>
+              <PieChartSkeleton />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
@@ -445,13 +459,7 @@ const Dashboard = () => {
               </p>
             </div>
             {isLoading ? (
-              <div className="h-80 flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 border-3 border-gray-700 border-t-yellow-500 rounded-full"
-                />
-              </div>
+              <ChartSkeleton />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={lowStockData} layout="vertical">
