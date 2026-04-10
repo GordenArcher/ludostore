@@ -918,6 +918,92 @@ def add_product_image(request, product_id):
         )
 
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_product_image(request, product_id, image_id):
+    """
+    Delete a product image.
+    Operator only.
+
+    Removes the image from storage and database.
+    If the deleted image was primary, the next image becomes primary.
+    """
+    request_id = generate_request_id()
+
+    try:
+        # Check operator permission
+        if not check_operator(request.user):
+            return error_response(
+                message="Access denied. Operator privileges required.",
+                status_code=status.HTTP_403_FORBIDDEN,
+                code="ACCESS_DENIED",
+                request_id=request_id,
+            )
+
+        # Get the product
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return error_response(
+                message="Product not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="PRODUCT_NOT_FOUND",
+                request_id=request_id,
+            )
+
+        # Get the image
+        try:
+            image = ProductImage.objects.get(id=image_id, product=product)
+        except ProductImage.DoesNotExist:
+            return error_response(
+                message="Image not found",
+                status_code=status.HTTP_404_NOT_FOUND,
+                code="IMAGE_NOT_FOUND",
+                request_id=request_id,
+            )
+
+        was_primary = image.is_primary
+
+        # Delete the image file from storage
+        if image.image:
+            image.image.delete(save=False)
+
+        # Delete the database record
+        image.delete()
+
+        # If the deleted image was primary, make the next image primary
+        if was_primary:
+            next_image = product.images.first()
+            if next_image:
+                next_image.is_primary = True
+                next_image.save(update_fields=["is_primary"])
+
+        logger.info(f"Product image {image_id} deleted by {request.user.email}")
+
+        return success_response(
+            message="Image deleted successfully",
+            data={
+                "product_id": str(product.id),
+                "product_name": product.name,
+                "deleted_image_id": str(image_id),
+                "was_primary": was_primary,
+            },
+            status_code=status.HTTP_200_OK,
+            code="IMAGE_DELETED",
+            request_id=request_id,
+        )
+
+    except Exception as e:
+        logger.exception(f"Error deleting product image: {e}")
+        return error_response(
+            message="Failed to delete image",
+            errors="An error occurred.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            code="IMAGE_DELETE_ERROR",
+            request_id=request_id,
+        )
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def operator_users(request):

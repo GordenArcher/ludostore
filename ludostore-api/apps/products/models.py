@@ -135,7 +135,7 @@ class ProductImage(models.Model):
                 last_order = (
                     ProductImage.objects.select_for_update()
                     .filter(product=self.product)
-                    .aggregate(max_order=Max("order"))
+                    .aggregate(max_order=models.Max("order"))
                     .get("max_order")
                 )
 

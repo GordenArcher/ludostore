@@ -16,6 +16,10 @@ urlpatterns = [
     path("products/", views.operator_products),
     path("products/<uuid:product_id>/stock/", views.update_product_stock),
     path("products/<uuid:product_id>/images/", views.add_product_image),
+    path(
+        "products/<uuid:product_id>/images/<uuid:image_id>/delete/",
+        views.delete_product_image,
+    ),
     path("users/", views.operator_users),
     path("users/<uuid:user_id>/status/", views.update_user_status),
     path("users/<uuid:user_id>/role/", views.update_user_role),

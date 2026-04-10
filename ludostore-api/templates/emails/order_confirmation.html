@@ -1,3 +1,5 @@
+{% load static %}
+
 <!doctype html>
 <html>
     <head>
@@ -38,7 +40,6 @@
                             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
                         "
                     >
-                        <!-- Header -->
                         <tr>
                             <td style="padding: 32px 32px 0 32px">
                                 <h1
@@ -63,7 +64,6 @@
                             </td>
                         </tr>
 
-                        <!-- Greeting -->
                         <tr>
                             <td style="padding: 24px 32px 0 32px">
                                 <p
@@ -90,7 +90,6 @@
                             </td>
                         </tr>
 
-                        <!-- Order Summary -->
                         <tr>
                             <td style="padding: 24px 32px">
                                 <div
@@ -302,7 +301,6 @@
                             </td>
                         </tr>
 
-                        <!-- Shipping Address -->
                         <tr>
                             <td style="padding: 0 32px">
                                 <h2
@@ -390,7 +388,6 @@
                             </td>
                         </tr>
 
-                        <!-- Payment Info -->
                         <tr>
                             <td style="padding: 24px 32px">
                                 <h2
@@ -421,26 +418,16 @@
                                         Cash on Delivery {% else %} Paystack
                                         (Paid via card) {% endif %}
                                     </p>
-                                    <p
-                                        style="
-                                            margin: 8px 0 0 0;
-                                            font-size: 14px;
-                                            color: #666666;
-                                        "
-                                    >
-                                        Status: {% if order.payment_status ==
-                                        'paid' %}
-                                        <span style="color: #10b981">Paid</span>
-                                        {% elif order.payment_status ==
-                                        'pending' %}
-                                        <span style="color: #f59e0b"
-                                            >Pending</span
-                                        >
+                                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #666666;">
+                                        Status:
+                                        {% if order.payment_status == 'paid' %}
+                                            <span style="color: #10b981;">Paid</span>
+                                        {% elif order.payment_status == 'pending' %}
+                                            <span style="color: #f59e0b;">Pending</span>
                                         {% else %}
-                                        <span style="color: #ef4444"
-                                            >Failed</span
-                                        >
+                                            <span style="color: #ef4444;">Failed</span>
                                         {% endif %}
+                                    </p>
                                     </p>
                                 </div>
                             </td>
@@ -488,7 +475,6 @@
                         </tr>
 
                         {% if order.customer_note %}
-                        <!-- Customer Note -->
                         <tr>
                             <td style="padding: 24px 32px">
                                 <h2
@@ -522,7 +508,6 @@
                         </tr>
                         {% endif %}
 
-                        <!-- Action Button -->
                         <tr>
                             <td style="padding: 24px 32px 32px 32px">
                                 <div style="text-align: center">
@@ -544,7 +529,6 @@
                             </td>
                         </tr>
 
-                        <!-- Footer -->
                         <tr>
                             <td
                                 style="
