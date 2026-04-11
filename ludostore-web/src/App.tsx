@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
+import { ScrollToTop } from "./components/scrollToTop";
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -14,6 +15,7 @@ function App() {
   return (
     <div>
       <Navbar />
+      <ScrollToTop />
 
       <Outlet />
 

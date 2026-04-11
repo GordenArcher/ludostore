@@ -27,6 +27,7 @@ import { ProductCard } from "../components/productCard";
 import { ProductCardSkeleton } from "../components/loading/productCardSkeleton";
 import HeroVid from "../assets/video/hero.MOV";
 import { Spinner } from "../components/loading/Spinner";
+import { CustomerReviews } from "../components/customerReviews";
 
 const heroVideos = [
   {
@@ -458,6 +459,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <CustomerReviews />
 
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
