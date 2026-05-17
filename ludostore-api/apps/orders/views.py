@@ -131,11 +131,11 @@ def checkout(request):
                 request_id=request_id,
             )
 
-        # Cash on delivery, order is ready
-        # Queue order confirmation email (async)
-        EmailService.send_order_confirmation_email(
-            email=request.user.email, order_data=order_data, user_name=user_name
-        )
+        # # Cash on delivery, order is ready
+        # # Queue order confirmation email (async)
+        # EmailService.send_order_confirmation_email(
+        #     email=request.user.email, order_data=order_data, user_name=user_name
+        # )
 
         return success_response(
             message="Order placed successfully",
@@ -399,7 +399,9 @@ def cancel_order(request, order_id):
         for item in order.items.all():
             if item.customization_images:
                 delete_customization_images(str(item.id), item.customization_images)
-                logger.info(f"Deleted {len(item.customization_images)} customization images for order item {item.id}")
+                logger.info(
+                    f"Deleted {len(item.customization_images)} customization images for order item {item.id}"
+                )
 
         # Restore stock
         for item in order.items.all():
@@ -431,9 +433,7 @@ def cancel_order(request, order_id):
         )
 
 
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_customization_images(request, order_id, item_id):
     """
@@ -458,7 +458,7 @@ def upload_customization_images(request, order_id, item_id):
                 message="Order not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Get order item
@@ -469,7 +469,7 @@ def upload_customization_images(request, order_id, item_id):
                 message="Order item not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_ITEM_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Check if uploads are allowed
@@ -478,7 +478,7 @@ def upload_customization_images(request, order_id, item_id):
                 message=f"Cannot upload images. Order status is '{order.order_status}'. Only pending or processing orders allowed.",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="UPLOAD_NOT_ALLOWED",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Check current image count
@@ -488,18 +488,18 @@ def upload_customization_images(request, order_id, item_id):
                 message="Maximum 4 images allowed per item",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="MAX_IMAGES_REACHED",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Get uploaded files
-        files = request.FILES.getlist('images')
+        files = request.FILES.getlist("images")
 
         if not files:
             return error_response(
                 message="No images provided",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="NO_IMAGES",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Calculate remaining slots
@@ -510,12 +510,15 @@ def upload_customization_images(request, order_id, item_id):
                 message=f"Too many images. You can only add {remaining_slots} more image(s)",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="TOO_MANY_IMAGES",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Validate files
         from common.utils.file_validation import validate_multiple_images
-        is_valid, valid_files, error = validate_multiple_images(files, max_files=remaining_slots, max_size_mb=5)
+
+        is_valid, valid_files, error = validate_multiple_images(
+            files, max_files=remaining_slots, max_size_mb=5
+        )
 
         if not is_valid:
             return error_response(
@@ -523,30 +526,33 @@ def upload_customization_images(request, order_id, item_id):
                 errors=error,
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="INVALID_IMAGES",
-                request_id=request_id
+                request_id=request_id,
             )
 
         from .utils import save_customization_images
+
         saved_urls = save_customization_images(str(item.id), valid_files)
 
         new_images = current_images + saved_urls
         item.customization_images = new_images
-        item.save(update_fields=['customization_images'])
+        item.save(update_fields=["customization_images"])
 
-        logger.info(f"Uploaded {len(saved_urls)} images for order item {item_id} by {request.user.email}")
+        logger.info(
+            f"Uploaded {len(saved_urls)} images for order item {item_id} by {request.user.email}"
+        )
 
         return success_response(
             message=f"Successfully uploaded {len(saved_urls)} image(s)",
             data={
-                'item_id': str(item.id),
-                'customization_images': new_images,
-                'uploaded': saved_urls,
-                'total_images': len(new_images),
-                'remaining_slots': 4 - len(new_images),
+                "item_id": str(item.id),
+                "customization_images": new_images,
+                "uploaded": saved_urls,
+                "total_images": len(new_images),
+                "remaining_slots": 4 - len(new_images),
             },
             status_code=status.HTTP_200_OK,
             code="IMAGES_UPLOADED",
-            request_id=request_id
+            request_id=request_id,
         )
 
     except Exception as e:
@@ -556,11 +562,11 @@ def upload_customization_images(request, order_id, item_id):
             errors="An error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="UPLOAD_ERROR",
-            request_id=request_id
+            request_id=request_id,
         )
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_customization_image(request, order_id, item_id, image_index):
     """
@@ -579,7 +585,7 @@ def delete_customization_image(request, order_id, item_id, image_index):
                 message="Order not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Get order item
@@ -590,7 +596,7 @@ def delete_customization_image(request, order_id, item_id, image_index):
                 message="Order item not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_ITEM_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Check if deletion is allowed
@@ -599,7 +605,7 @@ def delete_customization_image(request, order_id, item_id, image_index):
                 message=f"Cannot delete images. Order status is '{order.order_status}'",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="DELETE_NOT_ALLOWED",
-                request_id=request_id
+                request_id=request_id,
             )
 
         current_images = item.customization_images or []
@@ -609,32 +615,34 @@ def delete_customization_image(request, order_id, item_id, image_index):
                 message="Invalid image index",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 code="INVALID_INDEX",
-                request_id=request_id
+                request_id=request_id,
             )
-
 
         image_url = current_images[image_index]
 
         from .utils import delete_customization_images
+
         delete_customization_images(str(item.id), [image_url])
 
         current_images.pop(image_index)
         item.customization_images = current_images
-        item.save(update_fields=['customization_images'])
+        item.save(update_fields=["customization_images"])
 
-        logger.info(f"Deleted image {image_index} from order item {item_id} by {request.user.email}")
+        logger.info(
+            f"Deleted image {image_index} from order item {item_id} by {request.user.email}"
+        )
 
         return success_response(
             message="Image deleted successfully",
             data={
-                'item_id': str(item.id),
-                'customization_images': current_images,
-                'total_images': len(current_images),
-                'remaining_slots': 4 - len(current_images),
+                "item_id": str(item.id),
+                "customization_images": current_images,
+                "total_images": len(current_images),
+                "remaining_slots": 4 - len(current_images),
             },
             status_code=status.HTTP_200_OK,
             code="IMAGE_DELETED",
-            request_id=request_id
+            request_id=request_id,
         )
 
     except Exception as e:
@@ -644,11 +652,11 @@ def delete_customization_image(request, order_id, item_id, image_index):
             errors="An error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="DELETE_ERROR",
-            request_id=request_id
+            request_id=request_id,
         )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_customization_images(request, order_id, item_id):
     """
@@ -665,7 +673,7 @@ def get_customization_images(request, order_id, item_id):
                 message="Order not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         # Get order item
@@ -676,7 +684,7 @@ def get_customization_images(request, order_id, item_id):
                 message="Order item not found",
                 status_code=status.HTTP_404_NOT_FOUND,
                 code="ORDER_ITEM_NOT_FOUND",
-                request_id=request_id
+                request_id=request_id,
             )
 
         images = item.customization_images or []
@@ -684,16 +692,16 @@ def get_customization_images(request, order_id, item_id):
         return success_response(
             message="Customization images retrieved",
             data={
-                'item_id': str(item.id),
-                'product_name': item.product_name,
-                'customization_images': images,
-                'total_images': len(images),
-                'remaining_slots': 4 - len(images),
-                'can_upload': item.can_upload_images(),
-                'can_delete': item.can_delete_images(),
+                "item_id": str(item.id),
+                "product_name": item.product_name,
+                "customization_images": images,
+                "total_images": len(images),
+                "remaining_slots": 4 - len(images),
+                "can_upload": item.can_upload_images(),
+                "can_delete": item.can_delete_images(),
             },
             status_code=status.HTTP_200_OK,
-            request_id=request_id
+            request_id=request_id,
         )
 
     except Exception as e:
@@ -703,5 +711,5 @@ def get_customization_images(request, order_id, item_id):
             errors="An error occurred.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="RETRIEVE_ERROR",
-            request_id=request_id
+            request_id=request_id,
         )

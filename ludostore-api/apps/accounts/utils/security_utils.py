@@ -60,11 +60,11 @@ def check_account_can_login(account: UserAccount) -> Tuple[bool, Optional[str]]:
         lockout_remaining = (account.locked_until - timezone.now()).seconds // 60
         return False, f"Account locked. Try again in {lockout_remaining} minutes"
 
-    if not account.is_email_verified:
-        return (
-            False,
-            "Email is not verified. Please verify your email before logging in.",
-        )
+    # if not account.is_email_verified:
+    #     return (
+    #         False,
+    #         "Email is not verified. Please verify your email before logging in.",
+    #     )
 
     return True, None
 

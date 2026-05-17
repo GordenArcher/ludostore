@@ -114,8 +114,8 @@ def register(request):
         )
 
     # Get client IP for OTP auditing (passed to signal)
-    client_ip = get_client_ip(request)
-    user_agent = request.META.get("HTTP_USER_AGENT", "")
+    # client_ip = get_client_ip(request)
+    # user_agent = request.META.get("HTTP_USER_AGENT", "")
 
     try:
         with transaction.atomic():
@@ -135,31 +135,31 @@ def register(request):
 
             logger.info(f"New user registered: {email}")
 
-        from apps.accounts.constants import OTPType
-        from apps.accounts.utils.otp_utils import create_otp
-        from apps.notifications.services.email_service import EmailService
+        # from apps.accounts.constants import OTPType
+        # from apps.accounts.utils.otp_utils import create_otp
+        # from apps.notifications.services.email_service import EmailService
 
-        # Create verification OTP (32-character token)
-        otp = create_otp(
-            user=user,
-            otp_type=OTPType.EMAIL_VERIFICATION,
-            target=email,
-            ip_address=client_ip,
-            user_agent=user_agent,
-        )
+        # # Create verification OTP (32-character token)
+        # otp = create_otp(
+        #     user=user,
+        #     otp_type=OTPType.EMAIL_VERIFICATION,
+        #     target=email,
+        #     ip_address=client_ip,
+        #     user_agent=user_agent,
+        # )
 
-        # Build user_name for email personalization
-        user_name = f"{first_name} {last_name}".strip() or email.split("@")[0]
+        # # Build user_name for email personalization
+        # user_name = f"{first_name} {last_name}".strip() or email.split("@")[0]
 
-        # Queue verification email with token URL
-        EmailService.send_verification_email(
-            email=email, token=otp.otp_code, user_name=user_name
-        )
+        # # Queue verification email with token URL
+        # EmailService.send_verification_email(
+        #     email=email, token=otp.otp_code, user_name=user_name
+        # )
 
-        # Queue welcome email
-        EmailService.send_welcome_email(email=email, user_name=user_name)
+        # # Queue welcome email
+        # EmailService.send_welcome_email(email=email, user_name=user_name)
 
-        logger.info(f"Verification and welcome emails queued for {email}")
+        # logger.info(f"Verification and welcome emails queued for {email}")
 
         return success_response(
             message="User registered successfully. Please verify your email.",
