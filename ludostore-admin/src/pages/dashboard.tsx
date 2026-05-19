@@ -10,7 +10,6 @@ import {
   TrendingDown,
   Calendar,
   ChevronDown,
-  MoreVertical,
 } from "lucide-react";
 import {
   AreaChart,
@@ -419,11 +418,10 @@ const Dashboard = () => {
                     outerRadius={100}
                     paddingAngle={3}
                     dataKey="value"
-                    label={({ name, percent }) =>
+                    label={({ name, percent = 0 }) =>
                       `${name} ${(percent * 100).toFixed(0)}%`
                     }
                     labelLine={false}
-                    label={{ fill: "#9ca3af", fontSize: 12 }}
                   >
                     {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />

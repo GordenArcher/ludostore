@@ -57,7 +57,7 @@ const About = () => {
             <Gamepad2 className="w-8 h-8 text-yellow-500" />
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-            About LudoKingdom
+            About amfo art gallery
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Your trusted destination for premium Ludo products in Ghana.
@@ -72,7 +72,7 @@ const About = () => {
         >
           <h2 className="text-white font-semibold text-xl mb-3">Our Story</h2>
           <p className="text-gray-400 leading-relaxed">
-            Founded in 2024, LudoKingdom was born from a simple idea: to bring
+            Founded in 2024, amfo art gallery was born from a simple idea: to bring
             the joy of quality Ludo gaming to every home in Ghana. What started
             as a passion project has grown into Ghana's premier destination for
             Ludo boards, dice sets, and accessories.
@@ -148,7 +148,7 @@ const About = () => {
             Our Values
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {values.map((value, index) => (
+            {values.map((value) => (
               <div
                 key={value.title}
                 className="bg-[#1e1e1e] rounded-xl border border-white/10 p-5 hover:border-yellow-500/50 transition-colors"

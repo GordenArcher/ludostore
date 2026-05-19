@@ -12,7 +12,6 @@ import {
   XCircle,
   RefreshCw,
   Printer,
-  Download,
   Image,
 } from "lucide-react";
 import { useOrderStore } from "../../store/orderStore";

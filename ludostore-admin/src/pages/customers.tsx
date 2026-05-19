@@ -13,6 +13,8 @@ import {
   Ban,
   CheckCircle,
   ChevronDown,
+  AlertCircle,
+  Users,
 } from "lucide-react";
 import { getUsers, updateUserStatus, updateUserRole } from "../api/users";
 import type { AdminUserItem } from "../types/user";
@@ -51,6 +53,8 @@ const Customers = () => {
   const [blockReason, setBlockReason] = useState("");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [roleModalError, setRoleModalError] = useState<string | null>(null);
+  const [roleModalSuccess, setRoleModalSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const params: Record<string, string> = {};
@@ -104,14 +108,31 @@ const Customers = () => {
 
   const handleUpdateRole = async () => {
     if (!selectedUser) return;
+    if (roleModalSuccess) return;
     setIsUpdating(true);
+    setRoleModalError(null);
+    setRoleModalSuccess(null);
     try {
+      if (newRole === "admin") {
+        setRoleModalError("Admin users cannot be assigned from this modal.");
+        return;
+      }
+
       await updateUserRole(selectedUser.id, newRole);
       await fetchUsers();
-      setShowRoleModal(false);
-      setSelectedUser(null);
+      setRoleModalSuccess("User role updated successfully.");
+      setTimeout(() => {
+        setShowRoleModal(false);
+        setSelectedUser(null);
+        setRoleModalSuccess(null);
+      }, 1500);
     } catch (error) {
       console.error("Failed to update role", error);
+      setRoleModalError(
+        (error as any)?.response?.data?.message ||
+          (error as any)?.message ||
+          "Failed to update user role. Please try again.",
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -445,6 +466,8 @@ const Customers = () => {
                             onClick={() => {
                               setSelectedUser(user);
                               setNewRole(user.role);
+                              setRoleModalError(null);
+                              setRoleModalSuccess(null);
                               setShowRoleModal(true);
                             }}
                             className="p-1 text-gray-400 hover:text-yellow-500 transition-colors cursor-pointer"
@@ -478,6 +501,23 @@ const Customers = () => {
                     </motion.tr>
                   ))}
                 </AnimatePresence>
+                {users.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-10 text-center">
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800">
+                        <Users className="h-6 w-6 text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-white">
+                        No customers found
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {hasActiveFilters
+                          ? "Adjust your search or filters."
+                          : "Customers will appear here after they register."}
+                      </p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -548,6 +588,8 @@ const Customers = () => {
         onClose={() => {
           setShowRoleModal(false);
           setSelectedUser(null);
+          setRoleModalError(null);
+          setRoleModalSuccess(null);
         }}
         onConfirm={handleUpdateRole}
         title="Change User Role"
@@ -558,13 +600,31 @@ const Customers = () => {
         isLoading={isUpdating}
       >
         <div className="mt-4">
+          {roleModalSuccess && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>{roleModalSuccess}</span>
+            </div>
+          )}
+
+          {roleModalError && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{roleModalError}</span>
+            </div>
+          )}
+
           <label className="block text-sm font-medium text-gray-300 mb-1">
             New Role
           </label>
           <div className="relative">
             <select
               value={newRole}
-              onChange={(e) => setNewRole(e.target.value as any)}
+              onChange={(e) => {
+                setNewRole(e.target.value as any);
+                setRoleModalError(null);
+              }}
+              disabled={isUpdating || Boolean(roleModalSuccess)}
               className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 text-white text-sm cursor-pointer"
             >
               <option value="customer">Customer</option>

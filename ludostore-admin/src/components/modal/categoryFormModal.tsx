@@ -101,7 +101,9 @@ export const CategoryFormModal = ({
       setLocalErrors({ ...localErrors, [field]: undefined });
     }
     if (fieldErrors[field]) {
-      setFieldErrors({ ...fieldErrors, [field]: undefined });
+      const nextFieldErrors = { ...fieldErrors };
+      delete nextFieldErrors[field];
+      setFieldErrors(nextFieldErrors);
     }
   };
 

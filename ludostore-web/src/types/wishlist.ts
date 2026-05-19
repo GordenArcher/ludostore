@@ -1,6 +1,7 @@
 export interface WishlistItemProduct {
   id: string;
   name: string;
+  category_name?: string;
   regular_price: string;
   sale_price: string | null;
   current_price: string;

@@ -56,7 +56,7 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
-  await axiosClient.delete(`/operator/products/${id}/delete/`);
+  await axiosClient.delete(`/products/operator/products/${id}/delete/`);
 };
 
 export const updateProductStock = async (

@@ -178,7 +178,9 @@ export const ProductFormModal = ({
     }
     // Clear API error for this field
     if (fieldErrors[field]) {
-      setFieldErrors({ ...fieldErrors, [field]: undefined });
+      const nextFieldErrors = { ...fieldErrors };
+      delete nextFieldErrors[field];
+      setFieldErrors(nextFieldErrors);
     }
   };
 

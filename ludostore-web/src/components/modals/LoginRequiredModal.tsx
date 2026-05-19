@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X, LogIn, MessageCircle, ShoppingBag } from "lucide-react";
+import { X, LogIn, MessageCircle } from "lucide-react";
 
 interface LoginRequiredModalProps {
   isOpen: boolean;
@@ -24,9 +24,9 @@ export const LoginRequiredModal = ({
 
   const whatsappMessage = orderDetails
     ? `Hi, I want to purchase these items:%0A%0A${encodeURIComponent(orderDetails)}%0A%0APlease help me proceed with my order.`
-    : "Hi, I want to purchase items from Ludo Kingdom. Please help me proceed with my order.";
+    : "Hi, I want to purchase items from amfo art gallery. Please help me proceed with my order.";
 
-  const whatsappUrl = `https://wa.me/233123456789?text=${whatsappMessage}`;
+  const whatsappUrl = `https://wa.me/233248584625?text=${whatsappMessage}`;
 
   if (!isOpen) return null;
 

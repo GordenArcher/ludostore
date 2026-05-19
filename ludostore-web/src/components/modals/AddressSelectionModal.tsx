@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Check, MapPin } from "lucide-react";
 import type { Address } from "../../types/address";
 import { getAddresses } from "../../api/address";
+import { Spinner } from "../loading/Spinner";
 
 interface AddressSelectionModalProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ export const AddressSelectionModal = ({
         <div className="px-5 py-4 max-h-96 overflow-y-auto">
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+              <Spinner size="lg" color="yellow" />
             </div>
           ) : addresses.length === 0 ? (
             <div className="text-center py-8">

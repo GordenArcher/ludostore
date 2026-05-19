@@ -9,7 +9,6 @@ import {
   Edit2,
   X,
   Check,
-  Loader,
   MapPin,
   Plus,
   Trash2,
@@ -23,6 +22,7 @@ import { useProfileStore } from "../../store/profileStore";
 import { useAddressStore } from "../../store/addressStore";
 import { AddressModal } from "../../components/modals/AddressModal";
 import { ConfirmationModal } from "../../components/modals/ConfirmationModal";
+import { Spinner } from "../../components/loading/Spinner";
 import ProfileSkeleton from "../../components/loading/profileSkeleton";
 
 const Profile = () => {
@@ -302,9 +302,7 @@ const Profile = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg font-medium transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {isUpdating ? (
-                      <>
-                        <Loader className="w-4 h-4 animate-spin" /> Saving...
-                      </>
+                      <Spinner size="lg" color="white" />
                     ) : (
                       <>
                         <Save className="w-4 h-4" /> Save Changes
@@ -546,10 +544,7 @@ const Profile = () => {
                       className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg font-medium transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       {isUpdating ? (
-                        <>
-                          <Loader className="w-4 h-4 animate-spin" />{" "}
-                          Updating...
-                        </>
+                        <Spinner size="lg" color="white" />
                       ) : (
                         <>
                           <Save className="w-4 h-4" /> Update Password

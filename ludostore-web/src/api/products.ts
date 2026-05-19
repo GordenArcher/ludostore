@@ -11,10 +11,13 @@ export const productsAPI = {
   getProducts: async (params?: {
     page?: number;
     page_size?: number;
-    category?: string;
+    category_id?: string;
     search?: string;
+    min_price?: number;
+    max_price?: number;
+    in_stock?: boolean;
     featured?: boolean;
-    ordering?: string;
+    sort?: string;
   }): Promise<ProductsResponse> => {
     const response = await axiosClient.get<ProductsResponse>("/products/", {
       params,

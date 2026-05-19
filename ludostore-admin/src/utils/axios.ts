@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "/store/v1",
+  baseURL: import.meta.env.VITE_BACKEND_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

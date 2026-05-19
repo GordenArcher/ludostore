@@ -24,19 +24,13 @@ export const addToWishlist = async (
 };
 
 export const removeWishlistItem = async (itemId: string): Promise<void> => {
-  const response = await axiosClient.delete<WishlistResponse>(
-    `/wishlist/items/${itemId}/`,
-  );
-  return;
+  await axiosClient.delete<WishlistResponse>(`/wishlist/items/${itemId}/`);
 };
 
 export const removeProductFromWishlist = async (
   productId: string,
 ): Promise<void> => {
-  const response = await axiosClient.delete<WishlistResponse>(
-    `/wishlist/products/${productId}/`,
-  );
-  return;
+  await axiosClient.delete<WishlistResponse>(`/wishlist/products/${productId}/`);
 };
 
 export const updateWishlistItemNotes = async (

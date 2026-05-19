@@ -4,7 +4,6 @@ import {
   X,
   Upload,
   Trash2,
-  Loader,
   Image,
   AlertCircle,
   Check,
@@ -217,7 +216,7 @@ export const CustomImageModal = ({
                         className="absolute top-1 right-1 p-1.5 bg-red-500/80 hover:bg-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 cursor-pointer"
                       >
                         {deletingIndex === idx ? (
-                          <Loader className="w-3 h-3 text-white animate-spin" />
+                          <Spinner size="sm" color="white" />
                         ) : (
                           <Trash2 className="w-3 h-3 text-white" />
                         )}

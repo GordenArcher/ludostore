@@ -56,7 +56,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center gap-2 cursor-pointer">
               <Gamepad2 className="w-6 h-6 text-yellow-500" />
               <span className="text-white font-semibold text-lg">
-                Ludo<span className="text-yellow-500">Kingdom</span>
+                amfo <span className="text-yellow-500">art gallery</span>
               </span>
             </Link>
 

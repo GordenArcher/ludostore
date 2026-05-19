@@ -18,7 +18,7 @@ interface ProductState {
   clearSelected: () => void;
 }
 
-export const useProductStore = create<ProductState>((set, get) => ({
+export const useProductStore = create<ProductState>((set) => ({
   products: [],
   categories: [],
   selectedProduct: null,

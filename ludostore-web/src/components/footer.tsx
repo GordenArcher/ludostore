@@ -63,7 +63,7 @@ const Footer = () => {
             <Link to="/" className="flex items-center gap-2 group">
               <Gamepad2 className="w-8 h-8 text-yellow-500" />
               <span className="text-white font-bold text-xl">
-                Ludo<span className="text-yellow-500">Kingdom</span>
+                amfo <span className="text-yellow-500">art gallery</span>
               </span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -81,7 +81,9 @@ const Footer = () => {
                   className="p-2 bg-[#1e1e1e] hover:bg-yellow-500/20 rounded-lg transition-colors cursor-pointer"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-4 h-4 text-gray-400 hover:text-yellow-500 transition-colors" />
+                  <span className="text-gray-400 hover:text-yellow-500 transition-colors">
+                    <social.icon />
+                  </span>
                 </a>
               ))}
             </div>
@@ -145,11 +147,11 @@ const Footer = () => {
             <div className="mt-6 space-y-2">
               <div className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail className="w-4 h-4 text-yellow-500" />
-                <span>support@ludokingdom.com</span>
+                <span>support@amfoartgallery.com</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400 text-sm">
                 <Phone className="w-4 h-4 text-yellow-500" />
-                <span>+233 55 123 4567</span>
+                <span>024 858 4625</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400 text-sm">
                 <MapPin className="w-4 h-4 text-yellow-500" />
@@ -175,7 +177,7 @@ const Footer = () => {
 
         <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-500 text-xs">
-            © {currentYear} LudoKingdom. All rights reserved.
+            © {currentYear} amfo art gallery. All rights reserved.
           </p>
           <div className="flex gap-4">
             {legalLinks.map((link) => (

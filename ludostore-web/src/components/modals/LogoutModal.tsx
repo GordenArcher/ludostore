@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { LogOut, X, Loader } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
+import { Spinner } from "../loading/Spinner";
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -91,10 +92,7 @@ export const LogoutModal = ({ isOpen, onClose }: LogoutModalProps) => {
             className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isLoggingOut ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                Logging out...
-              </>
+              <Spinner size="lg" color="white" />
             ) : (
               <>
                 <LogOut className="w-4 h-4" />

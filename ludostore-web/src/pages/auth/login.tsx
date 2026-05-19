@@ -130,7 +130,7 @@ const Login = () => {
             ></motion.div>
             <h1 className="text-white text-2xl font-bold mb-2">Welcome Back</h1>
             <p className="text-gray-400 text-sm">
-              Sign in to continue to Ludo Kingdom
+              Sign in to continue to amfo art gallery
             </p>
           </motion.div>
 

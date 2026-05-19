@@ -5,9 +5,13 @@ import {
   removeProductFromWishlist,
   updateWishlistItemNotes,
   clearWishlist,
-  checkInWishlist,
+  checkInWishlist as apiCheckInWishlist,
 } from "../api/wishlist";
-import type { Wishlist, WishlistItem } from "../types/wishlist";
+import type {
+  CheckWishlistResponse,
+  Wishlist,
+  WishlistItem,
+} from "../types/wishlist";
 
 interface WishlistState {
   wishlist: Wishlist | null;
@@ -23,7 +27,7 @@ interface WishlistState {
   removeFromWishlist: (productId: string) => Promise<void>;
   updateNotes: (itemId: string, notes: string) => Promise<void>;
   clearWishlist: () => Promise<void>;
-  checkInWishlist: (productId: string) => Promise<boolean>;
+  checkInWishlist: (productId: string) => Promise<CheckWishlistResponse>;
 }
 
 export const useWishlistStore = create<WishlistState>((set, get) => ({
@@ -142,12 +146,13 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
     }
   },
 
-  checkInWishlist: async (productId: string): Promise<boolean> => {
+  checkInWishlist: async (
+    productId: string,
+  ): Promise<CheckWishlistResponse> => {
     try {
-      const result = await checkInWishlist(productId);
-      return result.is_in_wishlist;
+      return await apiCheckInWishlist(productId);
     } catch (error) {
-      return false;
+      return { is_in_wishlist: false };
     }
   },
 }));

@@ -17,7 +17,7 @@ interface ProfileState {
   changePassword: (data: ChangePasswordRequest) => Promise<boolean>;
 }
 
-export const useProfileStore = create<ProfileState>((set, get) => ({
+export const useProfileStore = create<ProfileState>((set) => ({
   profile: null,
   isLoading: false,
   isUpdating: false,

@@ -139,7 +139,7 @@ export const CustomerReviews = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [autoplay, setAutoplay] = useState(true);
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {

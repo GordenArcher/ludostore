@@ -8,6 +8,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Tags,
 } from "lucide-react";
 import { getCategories, deleteCategory } from "../api/categories";
 import type { AdminCategory, Pagination } from "../types/product";
@@ -177,6 +178,23 @@ const Categories = () => {
                     </motion.tr>
                   ))}
                 </AnimatePresence>
+                {categories.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center">
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800">
+                        <Tags className="h-6 w-6 text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-white">
+                        No categories found
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {search
+                          ? "Try a different search term."
+                          : "Create your first category to get started."}
+                      </p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

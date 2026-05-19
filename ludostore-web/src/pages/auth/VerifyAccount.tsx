@@ -7,7 +7,6 @@ import { isAxiosError } from "axios";
 import {
   CheckCircle,
   AlertCircle,
-  Loader2,
   ShieldCheck,
   ArrowRight,
   Mail,
@@ -301,8 +300,7 @@ const VerifyAccount = () => {
                     exit={{ opacity: 0 }}
                     className="flex items-center justify-center gap-2"
                   >
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Verifying...
+                    <Spinner size="lg" color="white" />
                   </motion.span>
                 ) : (
                   <motion.span

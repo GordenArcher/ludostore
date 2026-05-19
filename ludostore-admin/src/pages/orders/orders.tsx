@@ -9,6 +9,7 @@ import {
   Filter,
   X,
   ChevronDown,
+  ShoppingCart,
 } from "lucide-react";
 import { getOrders } from "../../api/orders";
 import type { AdminOrder } from "../../types/order";
@@ -205,6 +206,23 @@ const Orders = () => {
                   </motion.tr>
                 ))}
               </AnimatePresence>
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800">
+                      <ShoppingCart className="h-6 w-6 text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-white">
+                      No orders found
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {search || statusFilter
+                        ? "Adjust your search or filters."
+                        : "Orders will appear here after customers check out."}
+                    </p>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

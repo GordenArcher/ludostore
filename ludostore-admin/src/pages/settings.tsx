@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Bell, Lock, Globe, Save, Loader2 } from "lucide-react";
+import { Shield, Bell, Lock, Globe, Save } from "lucide-react";
+import { Spinner } from "../components/loader/spinner";
 
 const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +21,9 @@ const Settings = () => {
       title: "General Settings",
       description: "Manage your store general settings",
       fields: [
-        { label: "Store Name", value: "LudoKingdom", type: "text" },
-        { label: "Store Email", value: "admin@ludokingdom.com", type: "email" },
-        { label: "Store Phone", value: "+233 55 123 4567", type: "tel" },
+        { label: "Store Name", value: "amfo art gallery", type: "text" },
+        { label: "Store Email", value: "admin@amfoartgallery.com", type: "email" },
+        { label: "Store Phone", value: "024 858 4625", type: "tel" },
       ],
     },
     {
@@ -127,10 +128,7 @@ const Settings = () => {
             className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
+              <Spinner size="lg" color="white" />
             ) : (
               <>
                 <Save className="w-4 h-4" />

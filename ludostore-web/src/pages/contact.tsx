@@ -9,6 +9,11 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import {
+  isContactEmailConfigured,
+  sendContactMessage,
+} from "../api/contact";
+import { Spinner } from "../components/loading/Spinner";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -27,16 +32,22 @@ const Contact = () => {
     setError(null);
 
     try {
-      // API call will go here
-      // const response = await contactAPI.sendMessage(formData);
+      if (!isContactEmailConfigured()) {
+        throw new Error(
+          "Contact email is not configured yet. Please use phone or WhatsApp for now.",
+        );
+      }
 
-      // Temporary mock
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await sendContactMessage(formData);
       setSuccess(true);
       setFormData({ name: "", email: "", subject: "", message: "" });
-      setTimeout(() => setSuccess(false), 5000);
+      setTimeout(() => setSuccess(false), 3500);
     } catch (err) {
-      setError("Failed to send message. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -46,28 +57,36 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email Us",
-      details: ["support@ludokingdom.com", "orders@ludokingdom.com"],
-      link: "mailto:support@ludokingdom.com",
+      details: [
+        {
+          label: "support@amfoartgallery.com",
+          href: "mailto:support@amfoartgallery.com",
+        },
+        {
+          label: "orders@amfoartgallery.com",
+          href: "mailto:orders@amfoartgallery.com",
+        },
+      ],
     },
     {
       icon: Phone,
       title: "Call Us",
-      details: ["+233 55 123 4567", "+233 55 765 4321"],
-      link: "tel:+233551234567",
+      details: [{ label: "024 858 4625", href: "tel:+233248584625" }],
     },
     {
       icon: MessageCircle,
       title: "WhatsApp",
-      details: ["+233 55 123 4567"],
-      link: "https://wa.me/233551234567",
+      details: [
+        { label: "024 858 4625", href: "https://wa.me/233248584625" },
+      ],
     },
     {
       icon: Clock,
       title: "Business Hours",
       details: [
-        "Monday - Friday: 9am - 6pm",
-        "Saturday: 10am - 4pm",
-        "Sunday: Closed",
+        { label: "Monday - Friday: 9am - 6pm" },
+        { label: "Saturday: 10am - 4pm" },
+        { label: "Sunday: Closed" },
       ],
     },
   ];
@@ -110,17 +129,17 @@ const Contact = () => {
                 </div>
                 <div className="space-y-1 pl-11">
                   {info.details.map((detail, i) =>
-                    info.link ? (
+                    "href" in detail ? (
                       <a
                         key={i}
-                        href={info.link}
+                        href={detail.href}
                         className="text-gray-400 text-sm hover:text-yellow-500 transition-colors block"
                       >
-                        {detail}
+                        {detail.label}
                       </a>
                     ) : (
                       <p key={i} className="text-gray-400 text-sm">
-                        {detail}
+                        {detail.label}
                       </p>
                     ),
                   )}
@@ -139,13 +158,6 @@ const Contact = () => {
               Send a Message
             </h2>
 
-            {success && (
-              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-500 text-sm flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Message sent successfully! We'll get back to you soon.
-              </div>
-            )}
-
             {error && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
@@ -153,6 +165,24 @@ const Contact = () => {
               </div>
             )}
 
+            {success ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="min-h-96 flex flex-col items-center justify-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-500" />
+                </div>
+                <h3 className="text-white font-semibold text-xl mb-2">
+                  Message sent successfully
+                </h3>
+                <p className="text-gray-400 text-sm max-w-sm">
+                  We'll get back to you soon. The contact form will return in a
+                  moment.
+                </p>
+              </motion.div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -221,10 +251,7 @@ const Contact = () => {
                 className="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-gray-900/30 border-t-gray-900 rounded-full animate-spin" />
-                    Sending...
-                  </>
+                  <Spinner size="lg" color="white" />
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
@@ -233,6 +260,7 @@ const Contact = () => {
                 )}
               </button>
             </form>
+            )}
           </motion.div>
         </div>
       </div>

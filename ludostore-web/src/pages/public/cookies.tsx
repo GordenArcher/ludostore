@@ -7,7 +7,6 @@ import {
   Shield,
   AlertTriangle,
   RefreshCw,
-  X,
 } from "lucide-react";
 
 const Cookies = () => {
@@ -262,10 +261,10 @@ const Cookies = () => {
             us.
           </p>
           <a
-            href="mailto:privacy@ludokingdom.com"
+            href="mailto:privacy@amfoartgallery.com"
             className="inline-flex items-center gap-2 text-yellow-500 hover:text-yellow-400 transition-colors"
           >
-            privacy@ludokingdom.com
+            privacy@amfoartgallery.com
           </a>
         </motion.div>
       </div>

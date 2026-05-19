@@ -46,7 +46,6 @@ const ProductDetail = () => {
   const [wishlistItemId, setWishlistItemId] = useState<string | undefined>();
   const [wishlistNotes, setWishlistNotes] = useState<string | null>(null);
   const [isInCart, setIsInCart] = useState(false);
-  const [cartItemId, setCartItemId] = useState<string | undefined>();
   const [cartQuantity, setCartQuantity] = useState(0);
 
   useEffect(() => {
@@ -66,9 +65,6 @@ const ProductDetail = () => {
         if (selectedProduct.cart_quantity) {
           setCartQuantity(selectedProduct.cart_quantity);
           setQuantity(selectedProduct.cart_quantity);
-        }
-        if (selectedProduct.cart_item_id) {
-          setCartItemId(selectedProduct.cart_item_id);
         }
       }
     }

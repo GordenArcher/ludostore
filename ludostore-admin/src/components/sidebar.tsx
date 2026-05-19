@@ -5,7 +5,6 @@ import {
   Package,
   ShoppingCart,
   Users,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -20,7 +19,6 @@ const navItems = [
   { path: "/admin/categories", label: "Categories", icon: Tag },
   { path: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { path: "/admin/customers", label: "Customers", icon: Users },
-  // { path: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const Sidebar = () => {
@@ -56,7 +54,7 @@ const Sidebar = () => {
               to="/admin/dashboard"
               className="text-xl font-bold text-white cursor-pointer"
             >
-              Ludo<span className="text-yellow-500">Admin</span>
+              amfo <span className="text-yellow-500">art gallery</span>
             </NavLink>
             <button
               onClick={() => setIsOpen(false)}

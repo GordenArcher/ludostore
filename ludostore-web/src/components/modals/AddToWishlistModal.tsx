@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, X, Loader, Trash2, Edit2, Check } from "lucide-react";
+import { Heart, X, Trash2, Edit2, Check } from "lucide-react";
 import { useWishlistStore } from "../../store/wishlistStore";
+import { Spinner } from "../loading/Spinner";
 
 interface AddToWishlistModalProps {
   isOpen: boolean;
@@ -175,10 +176,7 @@ export const AddToWishlistModal = ({
                 className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isActionLoading ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    Removing...
-                  </>
+                  <Spinner size="lg" color="white" />
                 ) : (
                   <>
                     <Trash2 className="w-4 h-4" />
@@ -210,10 +208,7 @@ export const AddToWishlistModal = ({
                 className="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isActionLoading ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    {isInWishlist ? "Saving..." : "Adding..."}
-                  </>
+                  <Spinner size="lg" color="white" />
                 ) : (
                   <>
                     {isInWishlist ? (

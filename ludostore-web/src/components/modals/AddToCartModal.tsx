@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Minus, Plus, ShoppingCart, Loader, Check } from "lucide-react";
+import { X, Minus, Plus, ShoppingCart, Check } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
+import { Spinner } from "../loading/Spinner";
 
 interface AddToCartModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const AddToCartModal = ({
   onSuccess,
 }: AddToCartModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(initialQuantity);
   const [isSuccess, setIsSuccess] = useState(false);
   const { addToCart, isAdding } = useCartStore();
 
@@ -76,10 +77,10 @@ export const AddToCartModal = ({
 
   useEffect(() => {
     if (!isOpen) {
-      setQuantity(1);
+      setQuantity(initialQuantity);
       setIsSuccess(false);
     }
-  }, [isOpen]);
+  }, [initialQuantity, isOpen]);
 
   if (!isOpen) return null;
 
@@ -182,10 +183,7 @@ export const AddToCartModal = ({
                 Added!
               </>
             ) : isAdding ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                Adding...
-              </>
+              <Spinner size="lg" color="white" />
             ) : (
               <>
                 <ShoppingCart className="w-4 h-4" />

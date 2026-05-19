@@ -56,8 +56,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   hasInitialized: false,
 
   initialize: async () => {
-    const { isAuthenticated, isLoading: isAuthLoading } =
-      useAuthStore.getState();
+    const { isLoading: isAuthLoading } = useAuthStore.getState();
 
     // Wait for auth to finish loading
     if (isAuthLoading) {
@@ -252,8 +251,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   getItemQuantity: (productId: string) => {
-    const { cart, isAuthenticated } = get();
-    const { isLoading: isAuthLoading } = useAuthStore.getState();
+    const { cart } = get();
+    const { isAuthenticated, isLoading: isAuthLoading } =
+      useAuthStore.getState();
 
     if (isAuthLoading || !isAuthenticated) {
       const guestCart = getGuestCart();

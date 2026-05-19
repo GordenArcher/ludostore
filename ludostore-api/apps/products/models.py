@@ -103,8 +103,31 @@ class Product(models.Model):
         return self.sale_price if self.sale_price else self.regular_price
 
     def save(self, *args, **kwargs):
+        generated_slug = False
         if not self.slug:
             self.slug = slugify(self.name)
+            generated_slug = True
+
+        if (
+            self.stock_quantity > 0
+            and self.stock_status == self.StockStatus.OUT_OF_STOCK.value
+        ):
+            self.stock_status = self.StockStatus.IN_STOCK.value
+        elif (
+            self.stock_quantity == 0
+            and self.stock_status == self.StockStatus.IN_STOCK.value
+        ):
+            self.stock_status = self.StockStatus.OUT_OF_STOCK.value
+
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            update_fields = set(update_fields)
+            if "stock_quantity" in update_fields:
+                update_fields.add("stock_status")
+            if generated_slug:
+                update_fields.add("slug")
+            kwargs["update_fields"] = update_fields
+
         super().save(*args, **kwargs)
 
 

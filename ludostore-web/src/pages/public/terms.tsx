@@ -19,7 +19,7 @@ const Terms = () => {
       icon: Scale,
       title: "Acceptance of Terms",
       content: [
-        "By accessing or using LudoKingdom, you agree to be bound by these Terms of Service.",
+        "By accessing or using amfo art gallery, you agree to be bound by these Terms of Service.",
         "If you do not agree to these terms, please do not use our services.",
         "We reserve the right to modify these terms at any time. Changes become effective immediately upon posting.",
       ],
@@ -119,7 +119,7 @@ const Terms = () => {
           className="bg-[#1e1e1e] rounded-xl border border-white/10 p-6 mb-8"
         >
           <p className="text-gray-300 leading-relaxed">
-            Welcome to LudoKingdom. These Terms of Service govern your use of
+            Welcome to amfo art gallery. These Terms of Service govern your use of
             our website and services. By placing an order or using our site, you
             agree to be bound by these terms.
           </p>
@@ -170,10 +170,10 @@ const Terms = () => {
             If you have any questions about these Terms, please contact us.
           </p>
           <a
-            href="mailto:legal@ludokingdom.com"
+            href="mailto:legal@amfoartgallery.com"
             className="inline-flex items-center gap-2 text-yellow-500 hover:text-yellow-400 transition-colors"
           >
-            legal@ludokingdom.com
+            legal@amfoartgallery.com
           </a>
         </motion.div>
       </div>

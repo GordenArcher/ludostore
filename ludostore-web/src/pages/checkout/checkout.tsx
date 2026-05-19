@@ -6,7 +6,6 @@ import {
   Banknote,
   ArrowLeft,
   Check,
-  Loader,
   Truck,
   Package,
 } from "lucide-react";

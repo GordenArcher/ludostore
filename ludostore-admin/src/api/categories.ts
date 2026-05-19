@@ -4,11 +4,12 @@ import type { CategoriesResponse, AdminCategory } from "../types/product";
 export const getCategories = async (
   page: number = 1,
   pageSize: number = 100,
+  filters?: { search?: string },
 ): Promise<CategoriesResponse> => {
   const response = await axiosClient.get<CategoriesResponse>(
     "/products/categories/",
     {
-      params: { page, page_size: pageSize },
+      params: { page, page_size: pageSize, ...filters },
     },
   );
   return response.data;

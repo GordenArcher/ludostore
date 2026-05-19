@@ -11,15 +11,16 @@ import {
   CheckCircle,
   UserPlus,
   AlertCircle,
-  Loader2,
   MailCheck,
   ArrowRight,
 } from "lucide-react";
+import { Spinner } from "../../components/loading/Spinner";
 
 const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectUri = searchParams.get("redirect") || "/";
+  const shouldShowEmailVerification = false;
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -135,6 +136,11 @@ const Register = () => {
       if (response.data) {
         setRegisteredEmail(email);
         setSuccess(true);
+        navigate(
+          `/auth/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(
+            redirectUri,
+          )}`,
+        );
       }
     } catch (err: any) {
       if (isAxiosError(err) && err.response?.data) {
@@ -164,8 +170,9 @@ const Register = () => {
     }
   };
 
-  // If registration successful, show success message
-  if (success) {
+  // Email verification flow is paused while backend email sending is disabled.
+  // Keep this block in place so it can be restored when activation emails return.
+  if (success && shouldShowEmailVerification) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[rgb(48,48,48)] p-4">
         <motion.div
@@ -282,7 +289,7 @@ const Register = () => {
               Create Account
             </h1>
             <p className="text-gray-400 text-sm">
-              Join Ludo Kingdom and start playing
+              Join amfo art gallery and start playing
             </p>
           </motion.div>
 
@@ -523,8 +530,7 @@ const Register = () => {
                     exit={{ opacity: 0 }}
                     className="flex items-center justify-center gap-2"
                   >
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Creating Account...
+                    <Spinner size="lg" color="white" />
                   </motion.span>
                 ) : (
                   <motion.span

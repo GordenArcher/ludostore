@@ -120,10 +120,7 @@ export const ConfirmationModal = ({
             className={`flex-1 px-4 py-2 ${styles.buttonBg} text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer`}
           >
             {isLoading ? (
-              <>
-                <Spinner size="md" color="white" />
-                Processing...
-              </>
+              <Spinner size="md" color="white" />
             ) : (
               confirmText
             )}

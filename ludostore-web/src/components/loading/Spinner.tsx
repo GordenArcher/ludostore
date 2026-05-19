@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 interface SpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -35,7 +35,7 @@ export const Spinner = ({
   const dotSize = dotSizes[size];
   const containerGap = containerSizes[size];
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     animate: {
       transition: {
         staggerChildren: 0.2,
@@ -45,7 +45,7 @@ export const Spinner = ({
     },
   };
 
-  const dotVariants = {
+  const dotVariants: Variants = {
     initial: { scale: 0.6, opacity: 0.4 },
     animate: {
       scale: 1,
@@ -80,7 +80,7 @@ export const Spinner = ({
               duration: 0.6,
               repeat: Infinity,
               delay: i * 0.15,
-              ease: "easeInOut",
+              ease: "easeInOut" as const,
             }}
           />
         ))}

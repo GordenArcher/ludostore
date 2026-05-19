@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, AlertCircle, Gamepad2 } from "lucide-react";
+import { Mail, Lock, AlertCircle } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { adminLogin } from "../../api/auth";
 import { Spinner } from "../../components/loader/spinner";
@@ -100,7 +100,7 @@ const Login = () => {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">LudoKingdom Admin</h1>
+          <h1 className="text-2xl font-bold text-white">amfo art gallery</h1>
           <p className="text-gray-500 mt-1">Sign in to manage your store</p>
         </div>
 
@@ -150,7 +150,7 @@ const Login = () => {
                       ? "border-red-500"
                       : "border-gray-700"
                   }`}
-                  placeholder="admin@ludokingdom.com"
+                  placeholder="admin@amfoartgallery.com"
                 />
               </div>
               <AnimatePresence>

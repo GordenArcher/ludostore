@@ -42,3 +42,5 @@ export interface CreateAddressRequest {
   postal_code: string;
   country: string;
 }
+
+export type UpdateAddressRequest = Partial<CreateAddressRequest>;

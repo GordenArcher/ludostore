@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, CreditCard, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { X, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { verifyPayment } from "../../api/order";
 import { Spinner } from "../loading/Spinner";
 
@@ -18,7 +18,6 @@ export const PayNowModal = ({
   isOpen,
   onClose,
   onSuccess,
-  orderId,
   orderNumber,
   reference,
   amount,
@@ -131,9 +130,7 @@ export const PayNowModal = ({
                 className="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isVerifying ? (
-                  <>
-                    <Spinner size="lg" color="white" />
-                  </>
+                  <Spinner size="lg" color="white" />
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4" />

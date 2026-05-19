@@ -2,7 +2,7 @@ import axios from "axios";
 // import { navigateTo } from "./navigation";
 
 const axiosClient = axios.create({
-  baseURL: "/web/v1",
+  baseURL: import.meta.env.VITE_BACKEND_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

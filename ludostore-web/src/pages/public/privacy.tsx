@@ -113,7 +113,7 @@ const Privacy = () => {
           className="bg-[#1e1e1e] rounded-xl border border-white/10 p-6 mb-8"
         >
           <p className="text-gray-300 leading-relaxed">
-            At LudoKingdom, we are committed to protecting your privacy and
+            At amfo art gallery, we are committed to protecting your privacy and
             ensuring the security of your personal information. This Privacy
             Policy outlines how we collect, use, disclose, and safeguard your
             information when you visit our website or make a purchase from us.
@@ -171,10 +171,10 @@ const Privacy = () => {
             your data, please contact us.
           </p>
           <a
-            href="mailto:privacy@ludokingdom.com"
+            href="mailto:privacy@amfoartgallery.com"
             className="inline-flex items-center gap-2 text-yellow-500 hover:text-yellow-400 transition-colors"
           >
-            privacy@ludokingdom.com
+            privacy@amfoartgallery.com
             <Mail className="w-4 h-4" />
           </a>
         </motion.div>
