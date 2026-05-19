@@ -35,7 +35,9 @@ def custom_exception_handler(exc, context):
         return Response(error_data, status=status.HTTP_401_UNAUTHORIZED)
 
     elif isinstance(exc, PermissionDenied):
-        error_data["message"] = "You do not have permission to perform this action"
+        error_data["message"] = (
+            str(exc) or "You do not have permission to perform this action"
+        )
         error_data["code"] = "PERMISSION_DENIED"
         return Response(error_data, status=status.HTTP_403_FORBIDDEN)
 

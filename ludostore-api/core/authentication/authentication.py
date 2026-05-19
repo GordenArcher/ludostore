@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Tuple
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.exceptions import (
     AuthenticationFailed,
     InvalidToken,
@@ -26,6 +27,7 @@ class CookieOrHeaderJWTAuthentication(JWTAuthentication):
 
     ACCESS_TOKEN_COOKIE_NAME = "tkn.sid"
     REFRESH_TOKEN_COOKIE_NAME = "tkn.sidcc"
+    BLOCKED_ACCOUNT_MESSAGE = "Your account has been blocked. Contact support."
 
     def authenticate(self, request) -> Optional[Tuple]:
         """
@@ -61,11 +63,16 @@ class CookieOrHeaderJWTAuthentication(JWTAuthentication):
         """
         try:
             # we use parent class's header authentication
-            return super().authenticate(request)
+            header_auth = super().authenticate(request)
+            if header_auth:
+                self._enforce_user_can_access(header_auth[0])
+            return header_auth
         except (AuthenticationFailed, InvalidToken, TokenError) as e:
             # Log debug info but don't raise - we'll try cookie next
             logger.debug(f"Header authentication failed: {type(e).__name__}: {str(e)}")
             return None
+        except PermissionDenied:
+            raise
         except Exception as e:
             # Log unexpected errors but continue to cookie auth
             logger.warning(f"Unexpected error in header authentication: {str(e)}")
@@ -93,6 +100,8 @@ class CookieOrHeaderJWTAuthentication(JWTAuthentication):
                 logger.warning(f"Authentication failed: User {user.id} is inactive")
                 raise AuthenticationFailed("User is inactive", code="user_inactive")
 
+            self._enforce_user_can_access(user)
+
             return (user, validated_token)
 
         except InvalidToken as e:
@@ -104,9 +113,28 @@ class CookieOrHeaderJWTAuthentication(JWTAuthentication):
         except TokenError as e:
             logger.warning(f"Token error in cookie authentication: {str(e)}")
             return None
+        except PermissionDenied:
+            raise
         except Exception as e:
             logger.error(f"Unexpected error in cookie authentication: {str(e)}")
             return None
+
+    def _enforce_user_can_access(self, user) -> None:
+        """
+        Reject authenticated users whose account status no longer allows access.
+        This catches valid JWTs that were issued before an operator blocked the user.
+        """
+        from apps.accounts.constants import AccountStatus
+
+        account_status = getattr(getattr(user, "account", None), "account_status", None)
+
+        if account_status not in AccountStatus.ALLOW_LOGIN:
+            logger.warning(
+                "Authentication blocked for user %s with account status %s",
+                user.id,
+                account_status,
+            )
+            raise PermissionDenied(self.BLOCKED_ACCOUNT_MESSAGE)
 
     def _get_access_token_from_cookie(self, request) -> Optional[str]:
         """
