@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
@@ -8,8 +8,6 @@ import { onAuthExpired } from "./utils/authEvents";
 
 function App() {
   const { checkAuth, clearAuth } = useAuthStore();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     checkAuth();
@@ -18,14 +16,8 @@ function App() {
   useEffect(() => {
     return onAuthExpired(() => {
       clearAuth();
-      if (!location.pathname.startsWith("/auth/login")) {
-        navigate(
-          `/auth/login?redirect=${encodeURIComponent(location.pathname)}`,
-          { replace: true },
-        );
-      }
     });
-  }, [clearAuth, location.pathname, navigate]);
+  }, [clearAuth]);
 
   return (
     <div>
