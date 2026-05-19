@@ -23,7 +23,9 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def get_csv_env(name, default=""):
-    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+    return [
+        item.strip() for item in os.getenv(name, default).split(",") if item.strip()
+    ]
 
 
 # Quick-start development settings - unsuitable for production
@@ -101,7 +103,7 @@ AUTH_COOKIE_SETTINGS = {
     "SECURE": True,
     "SAMESITE": "None" if not DEBUG else "Lax",
     "PATH": "/",
-    "DOMAIN": "" if not DEBUG else None,
+    "DOMAIN": None,
     "ACCESS_TOKEN_MAX_AGE": 900,
     "REFRESH_TOKEN_MAX_AGE": 2592000,
 }
