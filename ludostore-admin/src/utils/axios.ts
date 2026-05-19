@@ -1,4 +1,5 @@
 import axios from "axios";
+import { emitAuthExpired } from "./authEvents";
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_API_URL,
@@ -19,11 +20,16 @@ axiosClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    if (originalRequest.url?.includes("/accounts/operator/login/")) {
+      return Promise.reject(error);
+    }
+
     if (!originalRequest._retryCount) {
       originalRequest._retryCount = 0;
     }
 
     if (originalRequest._retryCount >= 3) {
+      emitAuthExpired();
       return Promise.reject(error);
     }
 
