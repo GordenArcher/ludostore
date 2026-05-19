@@ -83,6 +83,8 @@ Create a `.env` file in both frontend and backend directories.
 ```
 SECRET_KEY=your_secret_key
 DEBUG=True
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,https://amfoartgallery.com
+CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://localhost:5174,https://amfoartgallery.com
 PAYSTACK_SECRET_KEY=your_key
 EMAIL_HOST_USER=your_email
 EMAIL_HOST_PASSWORD=your_password

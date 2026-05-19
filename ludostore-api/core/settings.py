@@ -22,6 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
+def get_csv_env(name, default=""):
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -121,14 +125,16 @@ RATE_LIMIT = {
     # "EXEMPT_PATHS": ["/api/v1/users/auth/login/"],
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:8081",
-    "http://localhost:5174",
-]
+CORS_ALLOWED_ORIGINS = get_csv_env(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://localhost:8081,http://localhost:5174",
+)
 
 
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = get_csv_env(
+    "CSRF_TRUSTED_ORIGINS",
+    ",".join(CORS_ALLOWED_ORIGINS),
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
