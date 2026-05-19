@@ -19,6 +19,7 @@ import {
 import { useOrderStore } from "../../store/orderStore";
 import { ConfirmationModal } from "../../components/modals/ConfirmationModal";
 import OrdersSkeleton from "../../components/loading/ordersSkeleton";
+import { resolveMediaUrlOrPlaceholder } from "../../utils/media";
 import { CustomImageModal } from "../../components/modals/CustomImageModal";
 import { PayNowModal } from "../../components/modals/PayNowModal";
 
@@ -132,8 +133,10 @@ const Orders = () => {
   };
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "https://via.placeholder.com/80x80?text=No+Image";
-    return imagePath;
+    return resolveMediaUrlOrPlaceholder(
+      imagePath,
+      "https://via.placeholder.com/80x80?text=No+Image",
+    );
   };
 
   if (isLoading) {

@@ -3,6 +3,10 @@ import { motion } from "framer-motion";
 import { X, Minus, Plus, ShoppingCart, Check } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 import { Spinner } from "../loading/Spinner";
+import {
+  getProductImagePath,
+  resolveMediaUrlOrPlaceholder,
+} from "../../utils/media";
 
 interface AddToCartModalProps {
   isOpen: boolean;
@@ -11,7 +15,11 @@ interface AddToCartModalProps {
     id: string;
     name: string;
     current_price: string;
-    images: Array<{ image: string; is_primary: boolean }>;
+    images: Array<{
+      image?: string;
+      image_url?: string;
+      is_primary: boolean;
+    }>;
     stock_quantity: number;
   };
   initialQuantity?: number;
@@ -32,9 +40,9 @@ export const AddToCartModal = ({
 
   const primaryImage =
     product.images?.find((img) => img.is_primary) || product.images?.[0];
-  const imageUrl = primaryImage?.image
-    ? primaryImage.image
-    : "https://via.placeholder.com/500x500?text=No+Image";
+  const imageUrl = resolveMediaUrlOrPlaceholder(
+    getProductImagePath(primaryImage),
+  );
 
   const price = parseFloat(product.current_price);
   const maxStock = product.stock_quantity || 99;

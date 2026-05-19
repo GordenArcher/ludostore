@@ -18,6 +18,7 @@ import { updateProductStock } from "../../api/products";
 import ProductsSkeleton from "../../components/loader/productsSkeleton";
 import { ProductFormModal } from "../../components/modal/productFormModal";
 import { DeleteConfirmModal } from "../../components/modal/deleteConfirmModal";
+import { getProductImagePath, resolveMediaUrl } from "../../utils/media";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -139,9 +140,9 @@ const Products = () => {
 
   const getPrimaryImage = (images: any[]) => {
     const primary = images?.find((img) => img.is_primary);
-    if (primary) return primary.image_url;
-    if (images?.[0]) return images[0].image_url;
-    return null;
+    if (primary) return resolveMediaUrl(getProductImagePath(primary));
+    if (images?.[0]) return resolveMediaUrl(getProductImagePath(images[0]));
+    return undefined;
   };
 
   const hasActiveFilters =

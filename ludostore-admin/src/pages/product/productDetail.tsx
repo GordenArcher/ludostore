@@ -29,6 +29,7 @@ import { Spinner } from "../../components/loader/spinner";
 import { DeleteConfirmModal } from "../../components/modal/deleteConfirmModal";
 import { ProductFormModal } from "../../components/modal/productFormModal";
 import { ImagePreviewModal } from "../../components/modal/ImagePreviewModal";
+import { getProductImagePath, resolveMediaUrl } from "../../utils/media";
 import ProductDetailSkeleton from "../../components/loader/productDetailSkeleton";
 
 const ProductDetail = () => {
@@ -198,7 +199,10 @@ const ProductDetail = () => {
   };
 
   const handleImageClick = (index: number) => {
-    const allImages = selectedProduct?.images.map((img) => img.image) || [];
+    const allImages =
+      selectedProduct?.images.map((img) =>
+        resolveMediaUrl(getProductImagePath(img)),
+      ) || [];
     setPreviewImages(allImages);
     setPreviewIndex(index);
     setShowImagePreview(true);
@@ -341,7 +345,7 @@ const ProductDetail = () => {
                           className="relative group/image cursor-pointer"
                         >
                           <img
-                            src={img.image}
+                            src={resolveMediaUrl(getProductImagePath(img))}
                             alt=""
                             className="w-12 h-12 rounded-lg object-cover bg-gray-800"
                           />

@@ -11,6 +11,10 @@ import {
 import { useWishlistStore } from "../store/wishlistStore";
 import WishlistSkeleton from "../components/loading/wishlistSkeleton";
 import { ConfirmationModal } from "../components/modals/ConfirmationModal";
+import {
+  getProductImagePath,
+  resolveMediaUrlOrPlaceholder,
+} from "../utils/media";
 
 const Wishlist = () => {
   const {
@@ -37,8 +41,7 @@ const Wishlist = () => {
   }, []);
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "https://via.placeholder.com/500x500?text=No+Image";
-    return `http://localhost:8000${imagePath}`;
+    return resolveMediaUrlOrPlaceholder(imagePath);
   };
 
   const formatPrice = (price: string) => {
@@ -147,7 +150,7 @@ const Wishlist = () => {
                     <Link to={`/products/${product.id}`} className="block">
                       <div className="relative h-48 overflow-hidden bg-[#2a2a2a]">
                         <img
-                          src={getImageUrl(primaryImage?.image || "")}
+                          src={getImageUrl(getProductImagePath(primaryImage))}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

@@ -8,6 +8,7 @@ export interface WishlistItemProduct {
   images: Array<{
     id: string;
     image: string;
+    image_url?: string;
     is_primary: boolean;
   }>;
 }

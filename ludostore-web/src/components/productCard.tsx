@@ -8,6 +8,10 @@ import { useWishlistStore } from "../store/wishlistStore";
 import { useAuthStore } from "../store/authStore";
 import { AddToCartModal } from "./modals/AddToCartModal";
 import { AddToWishlistModal } from "./modals/AddToWishlistModal";
+import {
+  getProductImagePath,
+  resolveMediaUrlOrPlaceholder,
+} from "../utils/media";
 
 interface ProductCardProps {
   product: Product;
@@ -32,9 +36,9 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
   const primaryImage =
     product.images?.find((img) => img.is_primary) || product.images?.[0];
-  const imageUrl = primaryImage?.image
-    ? primaryImage.image
-    : "https://via.placeholder.com/500x500?text=No+Image";
+  const imageUrl = resolveMediaUrlOrPlaceholder(
+    getProductImagePath(primaryImage),
+  );
 
   const price = parseFloat(product.current_price);
   const regularPrice = product.sale_price

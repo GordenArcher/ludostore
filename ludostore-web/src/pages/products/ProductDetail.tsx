@@ -26,6 +26,7 @@ import { useAuthStore } from "../../store/authStore";
 import { ProductDetailSkeleton } from "../../components/loading/productDetailSkeleton";
 import { AddToCartModal } from "../../components/modals/AddToCartModal";
 import { AddToWishlistModal } from "../../components/modals/AddToWishlistModal";
+import { getProductImagePath, resolveMediaUrl } from "../../utils/media";
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -102,12 +103,14 @@ const ProductDetail = () => {
     if (selectedProduct?.images) {
       const primaryImage = selectedProduct.images.find((img) => img.is_primary);
       if (primaryImage) {
-        setSelectedImage(primaryImage.image);
+        setSelectedImage(resolveMediaUrl(getProductImagePath(primaryImage)));
         setSelectedImageIndex(
           selectedProduct.images.findIndex((img) => img.id === primaryImage.id),
         );
       } else if (selectedProduct.images[0]) {
-        setSelectedImage(selectedProduct.images[0].image);
+        setSelectedImage(
+          resolveMediaUrl(getProductImagePath(selectedProduct.images[0])),
+        );
         setSelectedImageIndex(0);
       }
     }
@@ -143,7 +146,9 @@ const ProductDetail = () => {
       const nextIndex =
         (selectedImageIndex + 1) % selectedProduct.images.length;
       setSelectedImageIndex(nextIndex);
-      setSelectedImage(selectedProduct.images[nextIndex].image);
+      setSelectedImage(
+        resolveMediaUrl(getProductImagePath(selectedProduct.images[nextIndex])),
+      );
     }
   };
 
@@ -153,7 +158,9 @@ const ProductDetail = () => {
         (selectedImageIndex - 1 + selectedProduct.images.length) %
         selectedProduct.images.length;
       setSelectedImageIndex(prevIndex);
-      setSelectedImage(selectedProduct.images[prevIndex].image);
+      setSelectedImage(
+        resolveMediaUrl(getProductImagePath(selectedProduct.images[prevIndex])),
+      );
     }
   };
 
@@ -287,7 +294,7 @@ const ProductDetail = () => {
                   className="grid grid-cols-4 gap-3"
                 >
                   {selectedProduct.images.map((image, index) => {
-                    const imageUrl = image.image;
+                    const imageUrl = resolveMediaUrl(getProductImagePath(image));
                     const isActive = selectedImage === imageUrl;
                     return (
                       <button
@@ -524,7 +531,7 @@ const ProductDetail = () => {
               {selectedProduct.images.length > 1 && (
                 <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
                   {selectedProduct.images.map((image, index) => {
-                    const imageUrl = image.image;
+                    const imageUrl = resolveMediaUrl(getProductImagePath(image));
                     const isActive = selectedImage === imageUrl;
                     return (
                       <button

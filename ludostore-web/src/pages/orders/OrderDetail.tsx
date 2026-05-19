@@ -17,6 +17,7 @@ import {
 import { useOrderStore } from "../../store/orderStore";
 import OrderDetailSkeleton from "../../components/loading/orderDetailSkeleton";
 import { CustomImageModal } from "../../components/modals/CustomImageModal";
+import { resolveMediaUrlOrPlaceholder } from "../../utils/media";
 
 const statusConfig: Record<
   string,
@@ -90,8 +91,10 @@ const OrderDetail = () => {
   };
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "https://via.placeholder.com/80x80?text=No+Image";
-    return imagePath;
+    return resolveMediaUrlOrPlaceholder(
+      imagePath,
+      "https://via.placeholder.com/80x80?text=No+Image",
+    );
   };
 
   const handlePrint = () => {

@@ -16,6 +16,10 @@ import { checkout } from "../../api/order";
 import type { Address } from "../../types/address";
 import { AddressSelectionModal } from "../../components/modals/AddressSelectionModal";
 import { Spinner } from "../../components/loading/Spinner";
+import {
+  getProductImagePath,
+  resolveMediaUrlOrPlaceholder,
+} from "../../utils/media";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -242,9 +246,12 @@ const Checkout = () => {
                       <div className="w-12 h-12 bg-[#2a2a2a] rounded overflow-hidden shrink-0">
                         <img
                           src={
-                            item.product_details.images?.[0]?.image
-                              ? item.product_details.images[0].image
-                              : "https://via.placeholder.com/48x48?text=No+Image"
+                            resolveMediaUrlOrPlaceholder(
+                              getProductImagePath(
+                                item.product_details.images?.[0],
+                              ),
+                              "https://via.placeholder.com/48x48?text=No+Image",
+                            )
                           }
                           alt={item.product_details.name}
                           className="w-full h-full object-cover"

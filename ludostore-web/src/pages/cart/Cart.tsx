@@ -18,6 +18,10 @@ import {
 import CartSkeleton from "../../components/loading/cartSkeleton";
 import { ConfirmationModal } from "../../components/modals/ConfirmationModal";
 import { LoginRequiredModal } from "../../components/modals/LoginRequiredModal";
+import {
+  getProductImagePath,
+  resolveMediaUrlOrPlaceholder,
+} from "../../utils/media";
 import { UpdateQuantityModal } from "../../components/modals/UpdateQuantityModal";
 
 const Cart = () => {
@@ -61,8 +65,7 @@ const Cart = () => {
   }, [isAuthenticated, isAuthLoading, itemCount, hasInitialized]);
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "https://via.placeholder.com/500x500?text=No+Image";
-    return imagePath;
+    return resolveMediaUrlOrPlaceholder(imagePath);
   };
 
   const generateOrderDetails = () => {
@@ -220,8 +223,10 @@ const Cart = () => {
                   ? parseFloat(product?.current_price || "0")
                   : parseFloat(item.price_at_add);
                 const image = isAuthenticated
-                  ? product?.images?.find((img: any) => img.is_primary)
-                      ?.image || product?.images?.[0]?.image
+                  ? getProductImagePath(
+                      product?.images?.find((img: any) => img.is_primary) ||
+                        product?.images?.[0],
+                    )
                   : item.image;
                 const quantity = isAuthenticated
                   ? item.quantity
