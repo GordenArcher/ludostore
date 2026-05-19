@@ -1,4 +1,5 @@
 import axiosClient from "../utils/axios";
+import { setAuthTokens } from "../utils/authTokens";
 import type {
   LoginRequest,
   RegisterRequest,
@@ -13,6 +14,12 @@ export const login = async (
   const response = await axiosClient.post<
     ApiSuccessResponse<LoginResponseData>
   >("/accounts/login/", data);
+
+  const { access_token, refresh_token } = response.data.data;
+  if (access_token && refresh_token) {
+    setAuthTokens(access_token, refresh_token);
+  }
+
   return response.data;
 };
 

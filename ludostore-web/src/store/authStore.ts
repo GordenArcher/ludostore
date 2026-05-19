@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axiosClient from "../utils/axios";
 import type { ApiSuccessResponse, ApiErrorResponse } from "../types/auth";
+import { clearAuthTokens } from "../utils/authTokens";
 
 interface User {
   id: number;
@@ -94,6 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: null,
       });
+      clearAuthTokens();
     } catch (error: any) {
       // Even if logout fails, clear local state
       set({
@@ -102,10 +104,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: null,
       });
+      clearAuthTokens();
     }
   },
 
   clearAuth: () => {
+    clearAuthTokens();
     set({
       isAuthenticated: false,
       user: null,

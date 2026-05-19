@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { getAdminProfile, adminLogout } from "../api/auth";
 import type { AdminUser } from "../types/auth";
+import { clearAuthTokens } from "../utils/authTokens";
 
 interface AuthState {
   user: AdminUser | null;
@@ -35,11 +36,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Ignore
     } finally {
+      clearAuthTokens();
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
   clearAuth: () => {
+    clearAuthTokens();
     set({ user: null, isAuthenticated: false, isLoading: false, error: null });
   },
 }));

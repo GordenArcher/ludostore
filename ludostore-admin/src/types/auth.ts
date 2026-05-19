@@ -16,7 +16,8 @@ export interface AdminAuthResponse {
   status: string;
   message: string;
   data: {
-    user: AdminUser;
+    email: string;
+    role: AdminUser["role"];
     access_token: string;
     refresh_token: string;
   };

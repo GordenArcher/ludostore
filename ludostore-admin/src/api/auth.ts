@@ -1,4 +1,5 @@
 import axiosClient from "../utils/axios";
+import { setAuthTokens } from "../utils/authTokens";
 import type {
   AdminLoginRequest,
   AdminAuthResponse,
@@ -12,6 +13,12 @@ export const adminLogin = async (
     "/accounts/operator/login/",
     data,
   );
+
+  const { access_token, refresh_token } = response.data.data;
+  if (access_token && refresh_token) {
+    setAuthTokens(access_token, refresh_token);
+  }
+
   return response.data;
 };
 

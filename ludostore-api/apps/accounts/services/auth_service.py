@@ -5,7 +5,7 @@ Handles:
 - User registration
 - Login authentication
 - Password changes
-- Session management (cookies)
+- Session management
 """
 
 import logging
@@ -13,7 +13,7 @@ from typing import Dict, Optional, Tuple
 
 from django.conf import settings
 
-from common.cookies.auth import delete_auth_cookies, set_auth_cookies
+from common.cookies.auth import delete_auth_cookies
 from common.utils.mask import mask_email
 
 from ..constants import Role
@@ -99,12 +99,7 @@ class AuthService:
     @staticmethod
     def create_auth_response(response, user: User, request=None):
         """
-        Create authenticated response with JWT tokens in cookies.
-
-        Why JWT in cookies vs localStorage:
-        - HttpOnly cookies protect against XSS attacks
-        - Automatic sending with requests
-        - Can be configured with secure flags (Secure, SameSite)
+        Create authenticated response with JWT tokens.
 
         Args:
             response: Django response object to modify
@@ -118,15 +113,20 @@ class AuthService:
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
+        refresh_lifetime = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME")
+        refresh_expires_in = int(refresh_lifetime.total_seconds())
         tokens = {
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh),
-            "refresh_token_expires_in": settings.SIMPLE_JWT.get(
-                "REFRESH_TOKEN_LIFETIME", 86400 * 7
-            ),
+            "refresh_token_expires_in": refresh_expires_in,
         }
 
-        return set_auth_cookies(response, user, tokens, request)
+        response.data["data"] = {
+            **(response.data.get("data") or {}),
+            **tokens,
+        }
+
+        return response
 
     @staticmethod
     def logout_user(response):

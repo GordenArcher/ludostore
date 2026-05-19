@@ -17,6 +17,8 @@ from django.db import IntegrityError, transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import User
 from apps.accounts.utils.security_utils import validate_and_hash_password
@@ -382,6 +384,47 @@ def logout(request):
             errors="An error occurred during logout.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             code="LOGOUT_ERROR",
+            request_id=request_id,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    """
+    Refresh JWT tokens for clients using Authorization headers.
+    """
+    request_id = generate_request_id()
+    refresh_token_value = request.data.get("refresh_token")
+
+    if not refresh_token_value:
+        return error_response(
+            message="Refresh token is required",
+            errors={"refresh_token": ["This field is required."]},
+            status_code=status.HTTP_400_BAD_REQUEST,
+            code="MISSING_REFRESH_TOKEN",
+            request_id=request_id,
+        )
+
+    try:
+        refresh = RefreshToken(refresh_token_value)
+        data = {
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+        }
+
+        return success_response(
+            message="Token refreshed successfully",
+            data=data,
+            status_code=status.HTTP_200_OK,
+            code="TOKEN_REFRESHED",
+            request_id=request_id,
+        )
+    except TokenError:
+        return error_response(
+            message="Invalid or expired refresh token",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            code="INVALID_REFRESH_TOKEN",
             request_id=request_id,
         )
 

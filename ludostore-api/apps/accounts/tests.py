@@ -6,6 +6,43 @@ from apps.accounts.constants import AccountStatus
 from apps.accounts.models import User
 
 
+class LocalStorageTokenAuthTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="customer@example.com",
+            password="StrongPassword123",
+        )
+
+    def test_login_returns_tokens_in_response_body(self):
+        response = self.client.post(
+            "/api/v1/accounts/login/",
+            {
+                "email": "customer@example.com",
+                "password": "StrongPassword123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access_token", response.data["data"])
+        self.assertIn("refresh_token", response.data["data"])
+        self.assertNotIn("tkn.sid", response.cookies)
+        self.assertNotIn("tkn.sidcc", response.cookies)
+
+    def test_refresh_token_returns_new_access_token(self):
+        refresh_token = str(RefreshToken.for_user(self.user))
+
+        response = self.client.post(
+            "/api/v1/accounts/token/refresh/",
+            {"refresh_token": refresh_token},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access_token", response.data["data"])
+        self.assertIn("refresh_token", response.data["data"])
+
+
 class BlockedAccountAuthenticationTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
